@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// Presenter Component
+// Presenter Component 1
 const PostListPresenter = ({ posts, loading, error }) => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -13,7 +13,13 @@ const PostListPresenter = ({ posts, loading, error }) => {
     </ul>
   );
 }
-
+// Presenter Component 2
+const CardPresenter = ({ title, content }) => (
+  <div style={{ border: '1px solid #ccc', padding: '10px', margin: '10px 0' }}>
+    <h2>{title}</h2>
+    <p>{content}</p>
+  </div>
+);
 // Container Component
 const PostListContainer = () => {
   const [posts, setPosts] = useState([]);
@@ -31,7 +37,8 @@ setTimeout(() => {
 }, 1500);
   }, []);
 // composant de presentation
-  return <PostListPresenter posts={posts} loading={loading} error={error} />;
+  // return <PostListPresenter posts={posts} loading={loading} error={error} />;
+return <CardPresenter title="Post List" content={posts.map(post => post.title).join(', ')} />;
 }
 
 // Main App Component
