@@ -20,6 +20,25 @@ const CardPresenter = ({ title, content }) => (
     <p>{content}</p>
   </div>
 );
+// Presentation Component 3
+const TableComponent = ({ posts }) => (
+  <table border="1" cellPadding="5">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+      {posts.map(post => (
+        <tr key={post.id}>
+          <td>{post.id}</td>
+          <td>{post.title}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
 // Container Component
 const PostListContainer = () => {
   const [posts, setPosts] = useState([]);
@@ -38,7 +57,8 @@ setTimeout(() => {
   }, []);
 // composant de presentation
   // return <PostListPresenter posts={posts} loading={loading} error={error} />;
-return <CardPresenter title="Post List" content={posts.map(post => post.title).join(', ')} />;
+// return <CardPresenter title="Post List" content={posts.map(post => post.title).join(', ')} />;
+return <TableComponent posts={posts} />;
 }
 
 // Main App Component
