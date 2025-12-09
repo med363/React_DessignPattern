@@ -30,7 +30,7 @@ setTimeout(() => {
   setLoading(false);
 }, 1500);
   }, []);
-
+// composant de presentation
   return <PostListPresenter posts={posts} loading={loading} error={error} />;
 }
 
