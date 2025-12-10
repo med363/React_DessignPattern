@@ -1,156 +1,217 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // ============================================
-// PROBLEM: Without HOC - Duplicate Logic
+// 1. Simple Components (No loading logic)
 // ============================================
 
-// Component 1: Counter button
-const CounterButton = () => {
-  const [count, setCount] = useState(0); // 😫 Same logic repeated
-
+const UserProfile = ({ user }) => {
   return (
-    <button onClick={() => setCount(count + 1)} style={{ padding: '10px', margin: '5px' }}>
-      Button clicked {count} times
-    </button>
-  );
-};
-
-// Component 2: Counter text
-const CounterText = () => {
-  const [count, setCount] = useState(0); // 😫 Same logic repeated again!
-
-  return (
-    <div onClick={() => setCount(count + 1)} style={{ border: '1px solid blue', padding: '10px', cursor: 'pointer' }}>
-      Click me! Count: {count}
+    <div style={{ border: '2px solid blue', padding: '20px', borderRadius: '8px', margin: '10px' }}>
+      <h2>👤 User Profile</h2>
+      <p><strong>Name:</strong> {user.name}</p>
+      <p><strong>Email:</strong> {user.email}</p>
+      <p><strong>Age:</strong> {user.age}</p>
     </div>
   );
 };
 
-// Component 3: Counter heading
-const CounterHeading = () => {
-  const [count, setCount] = useState(0); // 😫 Same logic repeated AGAIN!
-
+const ProductList = ({ products }) => {
   return (
-    <h2 onClick={() => setCount(count + 1)} style={{ color: 'green', cursor: 'pointer' }}>
-      Heading Clicks: {count}
-    </h2>
+    <div style={{ border: '2px solid green', padding: '20px', borderRadius: '8px', margin: '10px' }}>
+      <h2>🛍️ Product List</h2>
+      <ul>
+        {products.map((product, index) => (
+          <li key={index}>{product.name} - ${product.price}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+const Dashboard = ({ data }) => {
+  return (
+    <div style={{ border: '2px solid purple', padding: '20px', borderRadius: '8px', margin: '10px' }}>
+      <h2>📊 Dashboard</h2>
+      <p><strong>Total Users:</strong> {data.totalUsers}</p>
+      <p><strong>Total Sales:</strong> ${data.totalSales}</p>
+      <p><strong>Active Orders:</strong> {data.activeOrders}</p>
+    </div>
   );
 };
 
 
 // ============================================
-// SOLUTION: With HOC - Reuse Logic Once!
+// 2. HOC: withLoading (Reusable Loading Logic)
 // ============================================
 
-// 🎯 Write the counter logic ONCE in a HOC
-const withCounter = (WrappedComponent) => {
+const withLoading = (WrappedComponent, fetchData, loadingTime = 2000) => {
   return (props) => {
-    // The reusable logic is HERE
-    const [count, setCount] = useState(0);
-    const increment = () => setCount(count + 1);
+    const [data, setData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Pass the logic to ANY component
-    return <WrappedComponent {...props} count={count} increment={increment} />;
+    useEffect(() => {
+      // Simulate fetching data
+      setIsLoading(true);
+      
+      const timer = setTimeout(() => {
+        const fetchedData = fetchData();
+        setData(fetchedData);
+        setIsLoading(false);
+      }, loadingTime);
+
+      return () => clearTimeout(timer);
+    }, []);
+
+    // Show loading state
+    if (isLoading) {
+      return (
+        <div style={{ 
+          border: '2px dashed gray', 
+          padding: '20px', 
+          borderRadius: '8px', 
+          margin: '10px',
+          textAlign: 'center',
+          backgroundColor: '#f0f0f0'
+        }}>
+          <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+          <p>Loading...</p>
+          <div style={{ 
+            width: '100%', 
+            height: '4px', 
+            backgroundColor: '#ddd', 
+            borderRadius: '2px',
+            overflow: 'hidden',
+            marginTop: '10px'
+          }}>
+            <div style={{ 
+              width: '100%', 
+              height: '100%', 
+              backgroundColor: '#4CAF50',
+              animation: 'loading 1.5s infinite'
+            }}></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show the component with data
+    return <WrappedComponent {...props} {...data} />;
   };
 };
 
 
 // ============================================
-// Simple Components (NO logic inside)
+// 3. Mock Data Functions
 // ============================================
 
-const SimpleButton = ({ count, increment }) => {
-  return (
-    <button onClick={increment} style={{ padding: '10px', margin: '5px', backgroundColor: 'lightblue' }}>
-      Button clicked {count} times
-    </button>
-  );
+const fetchUserData = () => {
+  return {
+    user: {
+      name: 'John Doe',
+      email: 'john@example.com',
+      age: 30
+    }
+  };
 };
 
-const SimpleText = ({ count, increment }) => {
-  return (
-    <div onClick={increment} style={{ border: '2px solid purple', padding: '10px', cursor: 'pointer' }}>
-      Click me! Count: {count}
-    </div>
-  );
+const fetchProductData = () => {
+  return {
+    products: [
+      { name: 'Laptop', price: 999 },
+      { name: 'Phone', price: 699 },
+      { name: 'Tablet', price: 499 }
+    ]
+  };
 };
 
-const SimpleHeading = ({ count, increment }) => {
-  return (
-    <h2 onClick={increment} style={{ color: 'orange', cursor: 'pointer' }}>
-      Heading Clicks: {count}
-    </h2>
-  );
-};
-
-const SimpleCard = ({ count, increment, title }) => {
-  return (
-    <div onClick={increment} style={{ border: '1px solid gray', padding: '15px', margin: '10px', borderRadius: '8px', cursor: 'pointer' }}>
-      <h3>{title}</h3>
-      <p>You clicked this card {count} times!</p>
-    </div>
-  );
+const fetchDashboardData = () => {
+  return {
+    data: {
+      totalUsers: 1250,
+      totalSales: 45000,
+      activeOrders: 89
+    }
+  };
 };
 
 
 // ============================================
-// Apply HOC to add counter logic
+// 4. Create Components WITH Loading Logic
 // ============================================
 
-const ButtonWithCounter = withCounter(SimpleButton);
-const TextWithCounter = withCounter(SimpleText);
-const HeadingWithCounter = withCounter(SimpleHeading);
-const CardWithCounter = withCounter(SimpleCard);
+const UserProfileWithLoading = withLoading(UserProfile, fetchUserData, 2000);
+const ProductListWithLoading = withLoading(ProductList, fetchProductData, 3000);
+const DashboardWithLoading = withLoading(Dashboard, fetchDashboardData, 1500);
 
 
 // ============================================
-// App Component
+// 5. App Component
 // ============================================
 
 function App() {
+  const [showComponents, setShowComponents] = useState(false);
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>🎯 HOC: Reusing Logic Example</h1>
+      <style>
+        {`
+          @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+        `}
+      </style>
 
-      {/* ❌ WITHOUT HOC */}
-      <div style={{ backgroundColor: '#ffe6e6', padding: '20px', marginBottom: '30px', borderRadius: '8px' }}>
-        <h2>❌ WITHOUT HOC (Duplicate Logic)</h2>
-        <p>Each component has the SAME counter logic repeated inside 😫</p>
-        <CounterButton />
-        <CounterText />
-        <CounterHeading />
-        <p style={{ color: 'red', fontWeight: 'bold' }}>
-          Problem: If you want to change the counter logic, you must edit 3 places!
-        </p>
-      </div>
+      <h1>🎯 HOC: Loading Page Example</h1>
 
-      {/* ✅ WITH HOC */}
-      <div style={{ backgroundColor: '#e6ffe6', padding: '20px', borderRadius: '8px' }}>
-        <h2>✅ WITH HOC (Reused Logic)</h2>
-        <p>All components share the SAME counter logic from the HOC 🎉</p>
-        <ButtonWithCounter />
-        <TextWithCounter />
-        <HeadingWithCounter />
-        <CardWithCounter title="Card Example" />
-        <p style={{ color: 'green', fontWeight: 'bold' }}>
-          Benefit: Counter logic is in ONE place. Easy to maintain and reuse!
-        </p>
-      </div>
-
-      {/* 💡 KEY CONCEPT */}
-      <div style={{ backgroundColor: '#fff3cd', padding: '20px', marginTop: '30px', borderRadius: '8px' }}>
-        <h2>💡 Key Concept: Logic Reusability</h2>
-        <ol style={{ lineHeight: '2' }}>
-          <li><strong>Without HOC:</strong> Copy-paste logic in every component 🔄</li>
-          <li><strong>With HOC:</strong> Write logic once, wrap any component with it ✨</li>
-          <li><strong>Result:</strong> Same behavior, less code, easier maintenance! 🚀</li>
+      <div style={{ backgroundColor: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
+        <h3>💡 How it works:</h3>
+        <ol>
+          <li><strong>withLoading</strong> HOC adds loading logic to any component</li>
+          <li>Shows "Loading..." while fetching data</li>
+          <li>Displays the component when data is ready</li>
+          <li>Same loading logic reused for ALL components! 🚀</li>
         </ol>
-        <div style={{ backgroundColor: 'white', padding: '15px', marginTop: '10px', borderLeft: '4px solid orange' }}>
-          <code>
-            withCounter(AnyComponent) → AnyComponent gets counter logic automatically!
-          </code>
-        </div>
       </div>
+
+      <button 
+        onClick={() => setShowComponents(!showComponents)}
+        style={{ 
+          padding: '15px 30px', 
+          fontSize: '16px', 
+          backgroundColor: '#4CAF50', 
+          color: 'white', 
+          border: 'none', 
+          borderRadius: '5px', 
+          cursor: 'pointer',
+          marginBottom: '20px'
+        }}
+      >
+        {showComponents ? '🔄 Reload All Components' : '▶️ Load Components'}
+      </button>
+
+      {showComponents && (
+        <div>
+          <h2>📦 Components with Loading States:</h2>
+          
+          <div style={{ display: 'grid', gap: '10px' }}>
+            <UserProfileWithLoading />
+            <ProductListWithLoading />
+            <DashboardWithLoading />
+          </div>
+
+          <div style={{ backgroundColor: '#e6ffe6', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
+            <h3>✅ Benefits of using HOC for loading:</h3>
+            <ul>
+              <li>Loading logic written ONCE in <code>withLoading</code></li>
+              <li>Applied to UserProfile, ProductList, and Dashboard</li>
+              <li>Each component gets automatic loading state</li>
+              <li>Easy to customize loading time for each component</li>
+              <li>No duplicate code! 🎉</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
