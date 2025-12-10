@@ -1,32 +1,40 @@
 import React from 'react';
 import { UserProvider } from './UserContext';
+import { ThemeProvider } from './ThemeContext';
 import UserProfile from './components/UserProfile';
 import UpdateUser from './components/UpdateUser';
+import ThemeToggle from './components/ThemeToggle';
+import ThemeDisplay from './components/ThemeDisplay';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
       <header style={styles.header}>
-        <h1>Context API - Exemple Simple</h1>
-        <p>Comprendre le partage de données avec Context API</p>
+        <h1>Context API - Multiple Contexts</h1>
+        <p>Comprendre l'utilisation de plusieurs contexts en même temps</p>
       </header>
       
-      {/* 4. Envelopper les composants avec le Provider */}
-      <UserProvider>
-        <div style={styles.container}>
-          <UserProfile />
-          <UpdateUser />
-        </div>
-      </UserProvider>
+      {/* Imbriquer plusieurs Providers (Providers composition) */}
+      <ThemeProvider>
+        <UserProvider>
+          <div style={styles.container}>
+            <UserProfile />
+            <UpdateUser />
+            <ThemeToggle />
+            <ThemeDisplay />
+          </div>
+        </UserProvider>
+      </ThemeProvider>
 
       <footer style={styles.footer}>
-        <h3>Comment ça marche ?</h3>
+        <h3>Concepts avancés :</h3>
         <ol style={styles.list}>
-          <li><strong>createContext()</strong> - Crée un Context</li>
-          <li><strong>Provider</strong> - Fournit les données aux composants enfants</li>
-          <li><strong>useContext()</strong> - Consomme les données du Context</li>
-          <li>Les données sont partagées sans props drilling ✨</li>
+          <li><strong>Multiple Contexts</strong> - Plusieurs contexts dans une app</li>
+          <li><strong>Providers Composition</strong> - Imbriquer les providers</li>
+          <li><strong>useContext multiple</strong> - Utiliser plusieurs contexts dans un composant</li>
+          <li><strong>Séparation des préoccupations</strong> - Chaque context gère sa propre logique</li>
+          <li>Thème + User = 2 contexts indépendants 🎯</li>
         </ol>
       </footer>
     </div>
