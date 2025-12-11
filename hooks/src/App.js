@@ -12,7 +12,7 @@ function App() {
    * - Pas besoin de réécrire la logique increment/decrement/reset
    * - Chaque compteur est indépendant avec son propre état
    * - Code propre et maintenable
-   */
+   **/
   const counter1 = useCounter(0);   // Premier compteur commence à 0
   const counter2 = useCounter(10);  // Deuxième compteur commence à 10
 
