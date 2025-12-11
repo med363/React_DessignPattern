@@ -1,9 +1,26 @@
 import React from 'react';
 import { useShoppingCart } from '../ShoppingCartContext';
 
+/**
+ * COMPOSANT: ProductList
+ * 
+ * Affiche une liste de produits disponibles
+ * Utilise le Context pour ajouter des produits au panier
+ * 
+ * IMPORTANT: Ce composant NE REÇOIT AUCUNE PROP
+ * Il accède directement aux données via le Context
+ */
 const ProductList = () => {
+  /**
+   * CONSOMMER LE CONTEXT
+   * useShoppingCart() est notre hook personnalisé
+   * Il retourne toutes les valeurs du ShoppingCartContext
+   * On destructure pour prendre seulement ce dont on a besoin
+   */
   const { addItem } = useShoppingCart();
 
+  // Données locales: liste des produits disponibles
+  // En production, ces données viendraient d'une API
   const products = [
     { id: 1, name: 'Laptop', price: 999, emoji: '💻' },
     { id: 2, name: 'Souris', price: 29, emoji: '🖱️' },
@@ -15,11 +32,17 @@ const ProductList = () => {
     <div style={styles.container}>
       <h2>📦 Produits Disponibles</h2>
       <div style={styles.grid}>
+        {/* Boucle sur chaque produit pour créer une carte */}
         {products.map(product => (
           <div key={product.id} style={styles.productCard}>
             <div style={styles.emoji}>{product.emoji}</div>
             <h3>{product.name}</h3>
             <p style={styles.price}>{product.price}€</p>
+            {/* 
+              Quand on clique, on appelle addItem() du Context
+              Pas besoin de passer par des props!
+              Le Provider gère l'ajout et tous les composants se mettent à jour
+            */}
             <button 
               onClick={() => addItem(product)}
               style={styles.button}

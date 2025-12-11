@@ -1,7 +1,26 @@
 import React from 'react';
 import { useShoppingCart } from '../ShoppingCartContext';
 
+/**
+ * COMPOSANT: CartStats
+ * 
+ * Affiche les statistiques du panier en temps réel
+ * 
+ * DÉMONSTRATION IMPORTANTE:
+ * Ce composant ne reçoit AUCUNE prop de son parent!
+ * Il accède directement aux données via le Context
+ * 
+ * Quand le panier change (dans ProductList ou CartSummary),
+ * ce composant se met à jour AUTOMATIQUEMENT
+ * C'est la magie du Context API! ✨
+ */
 const CartStats = () => {
+  /**
+   * On destructure 3 choses du Context:
+   * - items: tableau des produits (pour compter les types)
+   * - getItemCount: fonction qui calcule le total d'articles
+   * - getTotal: fonction qui calcule le prix total
+   */
   const { items, getItemCount, getTotal } = useShoppingCart();
 
   return (

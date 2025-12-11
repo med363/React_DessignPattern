@@ -1,8 +1,21 @@
 import React, { useContext } from 'react';
 import { UserContext } from '../UserContext';
 
+/**
+ * COMPOSANT: UserProfile
+ * Affiche les informations de l'utilisateur
+ * 
+ * MÉTHODE 1: Utiliser useContext directement
+ * (Alternative: créer un hook personnalisé comme useShoppingCart)
+ */
 const UserProfile = () => {
-  // 3. Utiliser le Context avec useContext
+  /**
+   * CONSOMMER LE CONTEXT avec useContext
+   * 
+   * useContext(UserContext) retourne la valeur fournie par UserProvider
+   * Dans ce cas: { user, updateUser }
+   * On destructure pour prendre seulement 'user'
+   */
   const { user } = useContext(UserContext);
 
   return (
