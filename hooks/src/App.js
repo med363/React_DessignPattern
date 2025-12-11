@@ -1,208 +1,310 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
-import useFetch from './hooks/useFetch';
-import useLocalStorage from './hooks/useLocalStorage';
+
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ * IMPORT DES CUSTOM HOOKS
+ * ═══════════════════════════════════════════════════════════════════
+ * 
+ * Les custom hooks sont dans le dossier src/hooks/
+ * On les importe comme n'importe quel module JavaScript
+ */
 import useCounter from './hooks/useCounter';
-import useForm from './hooks/useForm';
 import useToggle from './hooks/useToggle';
 
 function App() {
   /**
-   * EXEMPLE 1: RÉUTILISATION du hook useCounter
-   * 
-   * AVANTAGE: On utilise le MÊME hook 2 fois!
-   * - Pas besoin de réécrire la logique increment/decrement/reset
-   * - Chaque compteur est indépendant avec son propre état
-   * - Code propre et maintenable
-   **/
-  const counter1 = useCounter(0);   // Premier compteur commence à 0
-  const counter2 = useCounter(10);  // Deuxième compteur commence à 10
-
-  /**
-   * EXEMPLE 2: Hook useLocalStorage
-   * 
-   * AVANTAGE: Persistance automatique!
-   * - La valeur est sauvegardée dans le navigateur
-   * - Même après F5 (refresh), la valeur reste
-   * - Fonctionne comme useState mais avec localStorage
-   */
-  const [name, setName] = useLocalStorage('userName', '');
-
-  /**
-   * EXEMPLE 3: Hook useFetch pour appeler une API
-   * 
-   * AVANTAGE: Gestion automatique de loading, error, data
-   * - Quand userId change, le hook refait automatiquement le fetch
-   * - On peut réutiliser ce hook pour n'importe quelle API
-   * - Pas besoin de gérer manuellement les états loading/error
-   */
-  const [userId, setUserId] = useState(1);
-  const { data: user, loading, error } = useFetch(
-    `https://jsonplaceholder.typicode.com/users/${userId}`
-  );
-
-  /**
    * ═══════════════════════════════════════════════════════════════
-   * EXEMPLE 4: ENCAPSULATION avec useForm
+   * UTILISATION DES CUSTOM HOOKS
    * ═══════════════════════════════════════════════════════════════
    * 
-   * AVANT (logique NON encapsulée - répétée partout):
-   * ------------------------------------------------
-   * const [email, setEmail] = useState('');
-   * const [message, setMessage] = useState('');
-   * const handleEmailChange = (e) => setEmail(e.target.value);
-   * const handleMessageChange = (e) => setMessage(e.target.value);
-   * 
-   * APRÈS (logique ENCAPSULÉE dans le hook):
-   * ----------------------------------------
-   * const form = useForm({ email: '', message: '' });
-   * // Toute la complexité est cachée! ✨
-   * 
-   * BÉNÉFICE: Moins de code, plus clair, réutilisable
+   * Un custom hook s'utilise exactement comme les hooks React natifs
+   * (useState, useEffect, etc.)
    */
-  const contactForm = useForm({
-    email: '',
-    message: ''
-  });
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * EXEMPLE 5: ENCAPSULATION simple avec useToggle
-   * ═══════════════════════════════════════════════════════════════
-   * 
-   * Au lieu d'écrire:
-   * -----------------
-   * const [isVisible, setIsVisible] = useState(false);
-   * const show = () => setIsVisible(true);
-   * const hide = () => setIsVisible(false);
-   * const toggle = () => setIsVisible(!isVisible);
-   * 
-   * On ENCAPSULE dans un hook:
-   * -------------------------
-   * const [isVisible, show, hide, toggle] = useToggle(false);
-   * 
-   * RÉSULTAT: Code plus propre, logique réutilisable!
-   */
+  // ──────────────────────────────────────────────────────────────
+  // HOOK 1: useCounter
+  // ──────────────────────────────────────────────────────────────
+  // On peut créer plusieurs instances indépendantes du même hook!
+  
+  // Premier compteur commence à 0
+  const counter1 = useCounter(0);
+  
+  // Deuxième compteur commence à 100
+  const counter2 = useCounter(100);
+  
+  // Chaque compteur a son propre état INDÉPENDANT
+  // counter1.count et counter2.count sont séparés
+
+  // ──────────────────────────────────────────────────────────────
+  // HOOK 2: useToggle
+  // ──────────────────────────────────────────────────────────────
+  // On peut donner des noms personnalisés lors de la déstructuration
+  
+  // Pour afficher/cacher une section
   const [showSection, openSection, closeSection, toggleSection] = useToggle(false);
+  
+  // Pour afficher/cacher un autre élément
+  const [showMessage, , , toggleMessage] = useToggle(false);
 
   return (
     <div className="App">
-      <header style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1>Custom Hooks Demo - Reusing Logic</h1>
+      <div style={{ padding: '30px', maxWidth: '900px', margin: '0 auto' }}>
+        <h1>🎯 Custom Hooks - Guide Complet</h1>
+        <p style={{ color: '#666', fontSize: '16px', marginBottom: '40px' }}>
+          Les hooks sont définis dans <code>src/hooks/</code> avec commentaires détaillés
+        </p>
 
-        {/* Counter Example */}
-        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          <h2>📊 Counter Hook (Reused Logic)</h2>
-          <div style={{ marginBottom: '15px' }}>
-            <h3>Counter 1: {counter1.count}</h3>
-            <button onClick={counter1.increment}>+1</button>
-            <button onClick={counter1.decrement} style={{ margin: '0 5px' }}>-1</button>
-            <button onClick={counter1.reset}>Reset</button>
-          </div>
-          <div>
-            <h3>Counter 2: {counter2.count}</h3>
-            <button onClick={counter2.increment}>+1</button>
-            <button onClick={counter2.decrement} style={{ margin: '0 5px' }}>-1</button>
-            <button onClick={counter2.reset}>Reset</button>
-          </div>
-          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            ✨ Same logic reused for two independent counters!
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* SECTION 1: useCounter                                        */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <section style={{
+          marginBottom: '30px',
+          padding: '25px',
+          border: '3px solid #4CAF50',
+          borderRadius: '12px',
+          background: '#f9fff9'
+        }}>
+          <h2>📊 Custom Hook: useCounter</h2>
+          <p style={{ color: '#666', marginBottom: '20px' }}>
+            📂 Fichier: <code>src/hooks/useCounter.js</code><br/>
+            💡 Concept: Encapsuler la logique d'un compteur pour la réutiliser
           </p>
+
+          {/* Compteur 1 */}
+          <div style={{
+            marginBottom: '20px',
+            padding: '20px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '2px solid #e0e0e0'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Compteur 1: <span style={{ color: '#4CAF50', fontSize: '32px' }}>{counter1.count}</span></h3>
+            <button 
+              onClick={counter1.increment}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              ➕ Increment
+            </button>
+            <button 
+              onClick={counter1.decrement}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              ➖ Decrement
+            </button>
+            <button 
+              onClick={counter1.reset}
+              style={{ padding: '10px 20px', fontSize: '16px' }}
+            >
+              🔄 Reset
+            </button>
+          </div>
+
+          {/* Compteur 2 */}
+          <div style={{
+            padding: '20px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '2px solid #e0e0e0'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Compteur 2: <span style={{ color: '#4CAF50', fontSize: '32px' }}>{counter2.count}</span></h3>
+            <button 
+              onClick={counter2.increment}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              ➕ Increment
+            </button>
+            <button 
+              onClick={counter2.decrement}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              ➖ Decrement
+            </button>
+            <button 
+              onClick={counter2.reset}
+              style={{ padding: '10px 20px', fontSize: '16px' }}
+            >
+              🔄 Reset
+            </button>
+          </div>
+
+          {/* Explication */}
+          <div style={{
+            marginTop: '20px',
+            padding: '15px',
+            background: '#e8f5e9',
+            borderRadius: '8px',
+            borderLeft: '4px solid #4CAF50'
+          }}>
+            <strong>💡 Ce qu'il faut comprendre:</strong>
+            <ul style={{ textAlign: 'left', marginTop: '10px', lineHeight: '1.8' }}>
+              <li>Les deux compteurs utilisent le <strong>même hook</strong> <code>useCounter</code></li>
+              <li>Chaque compteur a son <strong>état indépendant</strong></li>
+              <li>Pas besoin de réécrire la logique increment/decrement/reset</li>
+              <li>Le code est <strong>réutilisable</strong> dans n'importe quel composant</li>
+            </ul>
+          </div>
         </section>
 
-        {/* LocalStorage Example */}
-        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          <h2>💾 LocalStorage Hook</h2>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            style={{ padding: '8px', fontSize: '16px', width: '200px' }}
-          />
-          <p>Stored name: <strong>{name || 'none'}</strong></p>
-          <p style={{ fontSize: '14px', color: '#666' }}>
-            ✨ Your name persists even after page reload!
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* SECTION 2: useToggle                                         */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <section style={{
+          marginBottom: '30px',
+          padding: '25px',
+          border: '3px solid #2196F3',
+          borderRadius: '12px',
+          background: '#f5f9ff'
+        }}>
+          <h2>🔄 Custom Hook: useToggle</h2>
+          <p style={{ color: '#666', marginBottom: '20px' }}>
+            📂 Fichier: <code>src/hooks/useToggle.js</code><br/>
+            💡 Concept: Gérer un état true/false avec des noms de fonctions clairs
           </p>
+
+          {/* Exemple 1: Section toggle */}
+          <div style={{
+            marginBottom: '20px',
+            padding: '20px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '2px solid #e0e0e0'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Exemple 1: Afficher/Cacher une section</h3>
+            <button 
+              onClick={toggleSection}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              🔄 Toggle
+            </button>
+            <button 
+              onClick={openSection}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              ✅ Show
+            </button>
+            <button 
+              onClick={closeSection}
+              style={{ padding: '10px 20px', fontSize: '16px' }}
+            >
+              ❌ Hide
+            </button>
+
+            {showSection && (
+              <div style={{
+                marginTop: '15px',
+                padding: '20px',
+                background: '#e3f2fd',
+                borderRadius: '8px',
+                border: '2px solid #2196F3'
+              }}>
+                <h4>🎉 Section visible!</h4>
+                <p>Cette section apparaît et disparaît grâce au hook <code>useToggle</code></p>
+              </div>
+            )}
+          </div>
+
+          {/* Exemple 2: Message toggle */}
+          <div style={{
+            padding: '20px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '2px solid #e0e0e0'
+          }}>
+            <h3 style={{ marginTop: 0 }}>Exemple 2: Afficher un message</h3>
+            <button 
+              onClick={toggleMessage}
+              style={{ marginRight: '10px', padding: '10px 20px', fontSize: '16px' }}
+            >
+              🔄 Toggle Message
+            </button>
+
+            {showMessage && (
+              <div style={{
+                marginTop: '15px',
+                padding: '20px',
+                background: '#fff3e0',
+                borderRadius: '8px',
+                border: '2px solid #FF9800'
+              }}>
+                <strong>📣 Message:</strong> Le hook useToggle peut être utilisé plusieurs fois!
+              </div>
+            )}
+          </div>
+
+          {/* Explication */}
+          <div style={{
+            marginTop: '20px',
+            padding: '15px',
+            background: '#e3f2fd',
+            borderRadius: '8px',
+            borderLeft: '4px solid #2196F3'
+          }}>
+            <strong>💡 Ce qu'il faut comprendre:</strong>
+            <ul style={{ textAlign: 'left', marginTop: '10px', lineHeight: '1.8' }}>
+              <li>Au lieu d'écrire <code>setState(true)</code>, on écrit <code>open()</code> (plus clair!)</li>
+              <li>Le hook peut être utilisé pour modales, menus, accordéons, etc.</li>
+              <li>On peut créer plusieurs toggles indépendants</li>
+              <li>Noms personnalisables lors de la déstructuration</li>
+            </ul>
+          </div>
         </section>
 
-        {/* Fetch Example */}
-        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          <h2>🌐 Fetch Hook</h2>
-          <div>
-            <label>User ID: </label>
-            <input
-              type="number"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              min="1"
-              max="10"
-              style={{ padding: '8px', fontSize: '16px', width: '60px', marginLeft: '5px' }}
-            />
-          </div>
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* RÉSUMÉ FINAL                                                 */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <section style={{
+          padding: '25px',
+          background: '#fff3e0',
+          borderRadius: '12px',
+          border: '3px solid #FF9800'
+        }}>
+          <h2>📖 Résumé: Anatomie d'un Custom Hook</h2>
           
-          {loading && <p>Loading...</p>}
-          {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-          {user && (
-            <div style={{ marginTop: '15px', textAlign: 'left', background: '#f5f5f5', padding: '15px', borderRadius: '5px' }}>
-              <p><strong>Name:</strong> {user.name}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>City:</strong> {user.address?.city}</p>
-            </div>
-          )}
-          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            ✨ Fetch logic is reusable for any API endpoint!
-          </p>
-        </section>
+          <div style={{ textAlign: 'left' }}>
+            <h3>Structure d'un Custom Hook:</h3>
+            <pre style={{
+              background: '#2d2d2d',
+              color: '#f8f8f2',
+              padding: '15px',
+              borderRadius: '8px',
+              overflow: 'auto'
+            }}>
+{`function useMonHook(params) {
+  // 1. Créer l'état
+  const [state, setState] = useState(initialValue);
 
-        {/* Form Encapsulation Example */}
-        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          <h2>📝 Form Hook (Encapsulation)</h2>
-          <div style={{ marginBottom: '10px' }}>
-            <input
-              type="email"
-              name="email"
-              value={contactForm.values.email}
-              onChange={contactForm.handleChange}
-              placeholder="Your email"
-              style={{ padding: '8px', fontSize: '16px', width: '200px', display: 'block', marginBottom: '10px' }}
-            />
-            <textarea
-              name="message"
-              value={contactForm.values.message}
-              onChange={contactForm.handleChange}
-              placeholder="Your message"
-              style={{ padding: '8px', fontSize: '16px', width: '200px', height: '80px', display: 'block' }}
-            />
-          </div>
-          <button onClick={contactForm.reset} style={{ marginTop: '10px' }}>Reset Form</button>
-          <div style={{ marginTop: '15px', background: '#f0f8ff', padding: '10px', borderRadius: '5px' }}>
-            <p><strong>Email:</strong> {contactForm.values.email || 'empty'}</p>
-            <p><strong>Message:</strong> {contactForm.values.message || 'empty'}</p>
-          </div>
-          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            ✨ ENCAPSULATION: Toute la logique du formulaire est dans le hook!
-          </p>
-        </section>
+  // 2. Créer des fonctions
+  const maFonction = () => { ... };
 
-        {/* Toggle Encapsulation Example */}
-        <section style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-          <h2>🔄 Toggle Hook (Simple Encapsulation)</h2>
-          <button onClick={toggleSection} style={{ marginRight: '5px' }}>Toggle</button>
-          <button onClick={openSection} style={{ marginRight: '5px' }}>Show</button>
-          <button onClick={closeSection}>Hide</button>
-          
-          {showSection && (
-            <div style={{ marginTop: '15px', background: '#e8f5e9', padding: '15px', borderRadius: '5px' }}>
-              <p>🎉 Cette section est visible!</p>
-              <p>La logique show/hide/toggle est ENCAPSULÉE dans useToggle</p>
+  // 3. Retourner ce que le composant utilisera
+  return { state, maFonction };
+}`}
+            </pre>
+
+            <h3 style={{ marginTop: '20px' }}>Règles essentielles:</h3>
+            <ol style={{ lineHeight: '2' }}>
+              <li><strong>Nom:</strong> Doit commencer par "use" (useCounter, useToggle, useForm...)</li>
+              <li><strong>Hooks internes:</strong> Peut utiliser useState, useEffect, et autres hooks</li>
+              <li><strong>Réutilisabilité:</strong> Peut être appelé dans n'importe quel composant</li>
+              <li><strong>Indépendance:</strong> Chaque appel crée une instance indépendante</li>
+            </ol>
+
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              background: '#4CAF50',
+              color: 'white',
+              borderRadius: '8px',
+              textAlign: 'center'
+            }}>
+              <strong style={{ fontSize: '18px' }}>
+                ✅ Custom Hooks = Réutilisabilité + Code Propre + Maintenabilité
+              </strong>
             </div>
-          )}
-          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            ✨ ENCAPSULATION: 4 lignes de logique réutilisable au lieu de les répéter!
-          </p>
+          </div>
         </section>
-      </header>
+      </div>
     </div>
   );
 }
