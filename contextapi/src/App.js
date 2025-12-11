@@ -1,115 +1,184 @@
-import React from 'react';
-import { UserProvider } from './UserContext';
-import { ThemeProvider } from './ThemeContext';
-import { ShoppingCartProvider } from './ShoppingCartContext';
-import UserProfile from './components/UserProfile';
-import UpdateUser from './components/UpdateUser';
-import ThemeToggle from './components/ThemeToggle';
-import ThemeDisplay from './components/ThemeDisplay';
-import ProductList from './components/ProductList';
-import CartSummary from './components/CartSummary';
-import CartStats from './components/CartStats';
+import React, { useState } from 'react';
+import { CounterProvider } from './CounterContext';
+import CounterDisplay from './components/CounterDisplay';
+import CounterControls from './components/CounterControls';
+import CounterStatus from './components/CounterStatus';
 import './App.css';
 
 function App() {
+  const [showExplanation, setShowExplanation] = useState(true);
+
   return (
     <div className="App">
       <header style={styles.header}>
-        <h1>🎯 Context API - Provider Pattern</h1>
-        <p>Comprendre le rôle du Provider en profondeur</p>
+        <h1>🎯 Context API - Changement d'État Simple</h1>
+        <p>Comprendre comment l'état se propage automatiquement</p>
+        <button 
+          onClick={() => setShowExplanation(!showExplanation)}
+          style={styles.toggleBtn}
+        >
+          {showExplanation ? '🙈 Masquer' : '👁️ Afficher'} l'explication
+        </button>
       </header>
       
       {/* 
-        COMPOSITION DE PROVIDERS
-        Chaque Provider enveloppe ses enfants et leur fournit des données
-        L'ordre n'a pas d'importance car ils sont indépendants
+        LE PROVIDER ENVELOPPE TOUT
+        Il contient l'état (count) et les fonctions pour le modifier
       */}
-      <ThemeProvider>
-        <UserProvider>
-          <ShoppingCartProvider>
-            
-            {/* Bouton panier flottant - disponible partout */}
-            <CartSummary />
-
-            <div style={styles.container}>
-              
-              {/* Section 1: User & Theme Context */}
-              <section style={styles.section}>
-                <h2>👤 Section Utilisateur & Thème</h2>
-                <div style={styles.row}>
-                  <UserProfile />
-                  <UpdateUser />
-                  <ThemeToggle />
-                  <ThemeDisplay />
-                </div>
-              </section>
-
-              {/* Section 2: Shopping Cart Context */}
-              <section style={styles.section}>
-                <h2>🛒 Section E-Commerce</h2>
-                <ProductList />
-                <CartStats />
-              </section>
-
-              {/* Explication */}
-              <section style={styles.explanation}>
-                <h3>🔍 Comment le Provider fonctionne :</h3>
-                <div style={styles.grid}>
-                  <div style={styles.card}>
-                    <h4>1️⃣ Création</h4>
-                    <p>Le Provider est un composant qui enveloppe d'autres composants</p>
-                    <code style={styles.code}>
-                      {'<Provider value={data}>{children}</Provider>'}
-                    </code>
-                  </div>
-                  
-                  <div style={styles.card}>
-                    <h4>2️⃣ Value Prop</h4>
-                    <p>La prop <strong>value</strong> contient toutes les données et fonctions à partager</p>
-                    <code style={styles.code}>
-                      {'{items, addItem, removeItem, ...}'}
-                    </code>
-                  </div>
-                  
-                  <div style={styles.card}>
-                    <h4>3️⃣ Children</h4>
-                    <p>Tous les composants enfants ont accès aux données via useContext</p>
-                    <code style={styles.code}>
-                      {'const {data} = useContext(Context)'}
-                    </code>
-                  </div>
-                  
-                  <div style={styles.card}>
-                    <h4>4️⃣ Pas de Props Drilling</h4>
-                    <p>Les données ne passent pas par les props intermédiaires !</p>
-                    <code style={styles.code}>
-                      {'❌ Parent → Child → GrandChild'}
-                      <br />
-                      {'✅ Provider → GrandChild'}
-                    </code>
-                  </div>
-                  
-                  <div style={styles.card}>
-                    <h4>5️⃣ Re-render</h4>
-                    <p>Quand value change, tous les composants qui utilisent le context se re-render</p>
-                    <code style={styles.code}>
-                      {'useState → setValue → re-render'}
-                    </code>
-                  </div>
-                  
-                  <div style={styles.card}>
-                    <h4>6️⃣ Composition</h4>
-                    <p>On peut imbriquer plusieurs Providers pour gérer différents états</p>
-                    <code style={styles.code}>
-                      {'<Theme><User><Cart>...</Cart></User></Theme>'}
-                    </code>
-                  </div>
-                </div>
-              </section>
+      <CounterProvider>
+        <div style={styles.container}>
+          
+          {/* Barre d'explication */}
+          {showExplanation && (
+            <div style={styles.explanation}>
+              <h3>🔍 Comment ça fonctionne ?</h3>
+              <ol style={styles.steps}>
+                <li>
+                  <strong>État initial:</strong> count = 0 dans le Provider
+                </li>
+                <li>
+                  <strong>Affichage:</strong> Tous les composants lisent count via useCounter()
+                </li>
+                <li>
+                  <strong>Clic sur un bouton:</strong> Une fonction (increment, etc.) est appelée
+                </li>
+                <li>
+                  <strong>Changement d'état:</strong> setCount() met à jour count dans le Provider
+                </li>
+                <li>
+                  <strong>Re-render automatique:</strong> TOUS les composants qui utilisent count se re-render
+                </li>
+                <li>
+                  <strong>UI synchronisée:</strong> L'affichage est mis à jour partout en même temps!
+                </li>
+              </ol>
+              <div style={styles.note}>
+                💡 <strong>Astuce:</strong> Ouvrez la console (F12) pour voir les logs des changements d'état
+              </div>
             </div>
-          </ShoppingCartProvider>
-        </UserProvider>
-      </ThemeProvider>
+          )}
+
+          {/* Grille de composants */}
+          <div style={styles.grid}>
+            {/* 
+              COMPOSANT 1: Affiche seulement
+              Ne modifie jamais l'état
+            */}
+            <CounterDisplay />
+
+            {/* 
+              COMPOSANT 2: Modifie l'état
+              Contient les boutons d'action
+            */}
+            <CounterControls />
+
+            {/* 
+              COMPOSANT 3: Affiche des valeurs dérivées
+              Se met à jour automatiquement
+            */}
+            <CounterStatus />
+          </div>
+
+          {/* Section explicative */}
+          <div style={styles.flow}>
+            <h3>📊 Flux de données avec Context API</h3>
+            <div style={styles.flowDiagram}>
+              <div style={styles.flowStep}>
+                <div style={styles.flowBox}>
+                  🏪 Provider
+                  <div style={styles.flowDetail}>
+                    État: count = X
+                  </div>
+                </div>
+              </div>
+              
+              <div style={styles.arrow}>⬇️</div>
+              
+              <div style={styles.flowStep}>
+                <div style={styles.flowBoxGroup}>
+                  <div style={styles.flowBox}>
+                    📊 Display
+                    <div style={styles.flowDetail}>lit count</div>
+                  </div>
+                  <div style={styles.flowBox}>
+                    🎮 Controls
+                    <div style={styles.flowDetail}>change count</div>
+                  </div>
+                  <div style={styles.flowBox}>
+                    📈 Status
+                    <div style={styles.flowDetail}>lit count</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div style={styles.arrow}>⬆️</div>
+              
+              <div style={styles.flowStep}>
+                <div style={styles.flowBox}>
+                  🔄 Mise à jour
+                  <div style={styles.flowDetail}>
+                    Quand count change, tous se re-render
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Points clés */}
+          <div style={styles.keyPoints}>
+            <h3>✨ Points Clés du Changement d'État</h3>
+            <div style={styles.pointsGrid}>
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>1️⃣</div>
+                <div style={styles.pointTitle}>État centralisé</div>
+                <div style={styles.pointText}>
+                  L'état vit dans le Provider, pas dans les composants individuels
+                </div>
+              </div>
+
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>2️⃣</div>
+                <div style={styles.pointTitle}>Modification via fonctions</div>
+                <div style={styles.pointText}>
+                  Les composants appellent des fonctions (increment, etc.) pour changer l'état
+                </div>
+              </div>
+
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>3️⃣</div>
+                <div style={styles.pointTitle}>Re-render automatique</div>
+                <div style={styles.pointText}>
+                  Quand l'état change, React re-render automatiquement tous les composants concernés
+                </div>
+              </div>
+
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>4️⃣</div>
+                <div style={styles.pointTitle}>Pas de props</div>
+                <div style={styles.pointText}>
+                  Aucun composant ne reçoit de props! Tout passe par le Context
+                </div>
+              </div>
+
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>5️⃣</div>
+                <div style={styles.pointTitle}>Synchronisation</div>
+                <div style={styles.pointText}>
+                  Tous les composants affichent toujours la même valeur, en temps réel
+                </div>
+              </div>
+
+              <div style={styles.point}>
+                <div style={styles.pointIcon}>6️⃣</div>
+                <div style={styles.pointTitle}>Une source de vérité</div>
+                <div style={styles.pointText}>
+                  Le Provider est la "single source of truth" pour l'état count
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CounterProvider>
     </div>
   );
 }
@@ -121,51 +190,123 @@ const styles = {
     color: 'white',
     textAlign: 'center'
   },
+  toggleBtn: {
+    marginTop: '15px',
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#4CAF50',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer'
+  },
   container: {
     padding: '20px',
-    maxWidth: '1200px',
+    maxWidth: '1400px',
     margin: '0 auto'
   },
-  section: {
-    marginBottom: '40px',
-    padding: '20px',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '12px'
-  },
-  row: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '15px',
-    marginTop: '20px'
-  },
   explanation: {
-    marginTop: '40px',
-    padding: '30px',
     backgroundColor: '#fff3cd',
+    border: '3px solid #ffc107',
     borderRadius: '12px',
-    border: '2px solid #ffc107'
+    padding: '25px',
+    marginBottom: '30px'
+  },
+  steps: {
+    textAlign: 'left',
+    lineHeight: '2',
+    fontSize: '16px'
+  },
+  note: {
+    backgroundColor: '#d1ecf1',
+    border: '2px solid #0c5460',
+    padding: '15px',
+    borderRadius: '6px',
+    marginTop: '20px',
+    color: '#0c5460'
   },
   grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+    gap: '20px',
+    marginBottom: '30px'
+  },
+  flow: {
+    backgroundColor: '#f8f9fa',
+    padding: '30px',
+    borderRadius: '12px',
+    marginBottom: '30px',
+    border: '2px solid #dee2e6'
+  },
+  flowDiagram: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '20px',
+    marginTop: '20px'
+  },
+  flowStep: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center'
+  },
+  flowBox: {
+    backgroundColor: 'white',
+    border: '3px solid #2196F3',
+    borderRadius: '8px',
+    padding: '20px',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    minWidth: '200px'
+  },
+  flowBoxGroup: {
+    display: 'flex',
+    gap: '20px',
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+  },
+  flowDetail: {
+    fontSize: '14px',
+    fontWeight: 'normal',
+    color: '#666',
+    marginTop: '8px'
+  },
+  arrow: {
+    fontSize: '32px'
+  },
+  keyPoints: {
+    backgroundColor: '#e8f5e9',
+    padding: '30px',
+    borderRadius: '12px',
+    border: '3px solid #4CAF50'
+  },
+  pointsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
     gap: '20px',
     marginTop: '20px'
   },
-  card: {
+  point: {
     backgroundColor: 'white',
     padding: '20px',
     borderRadius: '8px',
     border: '2px solid #ddd'
   },
-  code: {
-    display: 'block',
-    backgroundColor: '#f4f4f4',
-    padding: '10px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    marginTop: '10px',
-    fontFamily: 'monospace',
-    whiteSpace: 'pre-wrap'
+  pointIcon: {
+    fontSize: '32px',
+    marginBottom: '10px'
+  },
+  pointTitle: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+    color: '#333'
+  },
+  pointText: {
+    fontSize: '14px',
+    color: '#666',
+    lineHeight: '1.6'
   }
 };
 
