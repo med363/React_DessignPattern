@@ -40,7 +40,6 @@ const CounterStatus = () => {
   const isEven = count % 2 === 0;      // Pair si le reste de la division par 2 = 0
   const isPositive = count > 0;        // Positif si supérieur à 0
   const isZero = count === 0;          // Zéro si exactement 0
-  const isNegative = count < 0;        // Négatif si inférieur à 0
   
   /**
    * OBSERVER LES RE-RENDERS avec useEffect

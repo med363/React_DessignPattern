@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { CounterProvider } from './CounterContext';
-import CounterDisplay from './components/CounterDisplay';
-import CounterControls from './components/CounterControls';
-import CounterStatus from './components/CounterStatus';
+import { DisplaySettingsProvider } from './DisplaySettingsContext';
+import SettingsPanel from './components/SettingsPanel';
+import ContentDisplay from './components/ContentDisplay';
 import './App.css';
 
 function App() {
@@ -11,8 +10,8 @@ function App() {
   return (
     <div className="App">
       <header style={styles.header}>
-        <h1>🎯 Context API - Changement d'État Simple</h1>
-        <p>Comprendre comment l'état se propage automatiquement</p>
+        <h1>⚙️ Context API - Gestion des Paramètres d'Affichage</h1>
+        <p>Comprendre comment gérer et synchroniser plusieurs paramètres avec Context API</p>
         <button 
           onClick={() => setShowExplanation(!showExplanation)}
           style={styles.toggleBtn}
@@ -22,63 +21,73 @@ function App() {
       </header>
       
       {/* 
-        ═══════════════════════════════════════════════════════════
-        LE PROVIDER ENVELOPPE TOUT - C'EST LA CLÉ!
-        ═══════════════════════════════════════════════════════════
+        ═══════════════════════════════════════════════════════════════════════════
+        DISPLAY SETTINGS PROVIDER - GESTION DES PARAMÈTRES
+        ═══════════════════════════════════════════════════════════════════════════
         
-        CounterProvider contient:
-        1. L'ÉTAT (count) → la valeur actuelle stockée en mémoire
-        2. Les FONCTIONS (increment, decrement, etc.) → pour CHANGER l'état
+        Ce Provider gère PLUSIEURS paramètres d'affichage:
+        1. fontSize (taille du texte: small/medium/large)
+        2. themeColor (couleur: blue/green/purple/orange)
+        3. displayMode (affichage: grid/list)
+        4. showImages (afficher images: true/false)
+        5. showDescriptions (afficher descriptions: true/false)
+        6. language (langue: fr/en/es)
         
-        FLUX DU CHANGEMENT D'ÉTAT:
-        ┌─────────────────────────────────────────────────────────┐
-        │ 1. État initial: count = 0 dans le Provider             │
-        │ 2. Tous les composants lisent count via useCounter()    │
-        │ 3. User clique sur un bouton                             │
-        │ 4. Une fonction (ex: increment) est appelée             │
-        │ 5. setCount() change count dans le Provider             │
-        │ 6. React détecte le changement                          │
-        │ 7. TOUS les composants qui utilisent count se re-render│
-        │ 8. L'UI affiche la nouvelle valeur partout              │
-        └─────────────────────────────────────────────────────────┘
+        DIFFÉRENCE AVEC CounterContext:
+        - Counter: UN SEUL état simple (number)
+        - DisplaySettings: PLUSIEURS états différents (string, boolean)
+        
+        FLUX DES PARAMÈTRES:
+        ┌─────────────────────────────────────────────────────────────────────┐
+        │ 1. User change un paramètre dans SettingsPanel                     │
+        │ 2. Un setter est appelé (ex: setFontSize('large'))                 │
+        │ 3. Le Provider met à jour son état                                 │
+        │ 4. React détecte le changement                                     │
+        │ 5. ContentDisplay se re-render avec le nouveau paramètre           │
+        │ 6. L'UI applique les nouveaux styles automatiquement!              │
+        └─────────────────────────────────────────────────────────────────────┘
+        
+        AVANTAGES:
+        ✅ Centralisation: Un seul endroit pour tous les paramètres
+        ✅ Synchronisation: Tous les composants utilisent les mêmes valeurs
+        ✅ Simplicité: Pas de props drilling
+        ✅ Réutilisabilité: N'importe quel composant peut lire/modifier
       */}
-      <CounterProvider>
+      <DisplaySettingsProvider>
         <div style={styles.container}>
           
           {/* Barre d'explication */}
           {showExplanation && (
             <div style={styles.explanation}>
-              <h3>🔍 Comment ça fonctionne ?</h3>
+              <h3>🔍 Comment gérer les paramètres avec Context API ?</h3>
               <ol style={styles.steps}>
                 <li>
-                  <strong>État initial:</strong> count = 0 dans le Provider
+                  <strong>États multiples:</strong> Le Provider gère 6 paramètres différents simultanément
                 </li>
                 <li>
-                  <strong>Affichage:</strong> Tous les composants lisent count via useCounter()
+                  <strong>Panneau de contrôle:</strong> SettingsPanel permet de modifier tous les paramètres
                 </li>
                 <li>
-                  <strong>Clic sur un bouton:</strong> Une fonction (increment, etc.) est appelée
+                  <strong>Changement:</strong> Quand vous cliquez, un setter change l'état (ex: setFontSize)
                 </li>
                 <li>
-                  <strong>Changement d'état:</strong> setCount() met à jour count dans le Provider
+                  <strong>Propagation:</strong> Le Provider se met à jour avec la nouvelle valeur
                 </li>
                 <li>
-                  <strong>Re-render automatique:</strong> TOUS les composants qui utilisent count se re-render
+                  <strong>Synchronisation:</strong> ContentDisplay se re-render automatiquement
                 </li>
                 <li>
-                  <strong>UI synchronisée:</strong> L'affichage est mis à jour partout en même temps!
+                  <strong>Application:</strong> Les nouveaux styles sont appliqués partout!
                 </li>
               </ol>
               <div style={styles.note}>
-                💡 <strong>Astuce:</strong> Ouvrez la console (F12) pour voir les logs des changements d'état
+                💡 <strong>Astuce:</strong> Ouvrez la console (F12) pour voir les logs des changements
                 <br /><br />
-                <strong>Ce que vous verrez dans la console:</strong>
-                <br />🔵 <code>increment() appelé</code> → La fonction est exécutée
-                <br />🔄 <code>CounterDisplay re-rendered</code> → Le composant se met à jour
-                <br />🔄 <code>CounterStatus re-rendered</code> → L'autre composant se met à jour aussi!
+                <strong>Ce que vous verrez:</strong>
+                <br />📏 <code>Changement de taille: medium → large</code>
+                <br />🔄 <code>ContentDisplay re-rendered avec: fontSize: 'large'</code>
                 <br /><br />
-                <strong>Observation importante:</strong> Les composants se re-render AUTOMATIQUEMENT
-                sans qu'on ait besoin de faire quoi que ce soit!
+                <strong>Testez:</strong> Changez plusieurs paramètres et voyez comment tout se synchronise!
               </div>
             </div>
           )}
@@ -86,124 +95,19 @@ function App() {
           {/* Grille de composants */}
           <div style={styles.grid}>
             {/* 
-              COMPOSANT 1: Affiche seulement
-              Ne modifie jamais l'état
+              PANNEAU DE PARAMÈTRES
+              Permet de modifier tous les paramètres d'affichage
             */}
-            <CounterDisplay />
+            <SettingsPanel />
 
             {/* 
-              COMPOSANT 2: Modifie l'état
-              Contient les boutons d'action
+              AFFICHAGE DU CONTENU
+              Applique les paramètres et se met à jour automatiquement
             */}
-            <CounterControls />
-
-            {/* 
-              COMPOSANT 3: Affiche des valeurs dérivées
-              Se met à jour automatiquement
-            */}
-            <CounterStatus />
-          </div>
-
-          {/* Section explicative */}
-          <div style={styles.flow}>
-            <h3>📊 Flux de données avec Context API</h3>
-            <div style={styles.flowDiagram}>
-              <div style={styles.flowStep}>
-                <div style={styles.flowBox}>
-                  🏪 Provider
-                  <div style={styles.flowDetail}>
-                    État: count = X
-                  </div>
-                </div>
-              </div>
-              
-              <div style={styles.arrow}>⬇️</div>
-              
-              <div style={styles.flowStep}>
-                <div style={styles.flowBoxGroup}>
-                  <div style={styles.flowBox}>
-                    📊 Display
-                    <div style={styles.flowDetail}>lit count</div>
-                  </div>
-                  <div style={styles.flowBox}>
-                    🎮 Controls
-                    <div style={styles.flowDetail}>change count</div>
-                  </div>
-                  <div style={styles.flowBox}>
-                    📈 Status
-                    <div style={styles.flowDetail}>lit count</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div style={styles.arrow}>⬆️</div>
-              
-              <div style={styles.flowStep}>
-                <div style={styles.flowBox}>
-                  🔄 Mise à jour
-                  <div style={styles.flowDetail}>
-                    Quand count change, tous se re-render
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Points clés */}
-          <div style={styles.keyPoints}>
-            <h3>✨ Points Clés du Changement d'État</h3>
-            <div style={styles.pointsGrid}>
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>1️⃣</div>
-                <div style={styles.pointTitle}>État centralisé</div>
-                <div style={styles.pointText}>
-                  L'état vit dans le Provider, pas dans les composants individuels
-                </div>
-              </div>
-
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>2️⃣</div>
-                <div style={styles.pointTitle}>Modification via fonctions</div>
-                <div style={styles.pointText}>
-                  Les composants appellent des fonctions (increment, etc.) pour changer l'état
-                </div>
-              </div>
-
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>3️⃣</div>
-                <div style={styles.pointTitle}>Re-render automatique</div>
-                <div style={styles.pointText}>
-                  Quand l'état change, React re-render automatiquement tous les composants concernés
-                </div>
-              </div>
-
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>4️⃣</div>
-                <div style={styles.pointTitle}>Pas de props</div>
-                <div style={styles.pointText}>
-                  Aucun composant ne reçoit de props! Tout passe par le Context
-                </div>
-              </div>
-
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>5️⃣</div>
-                <div style={styles.pointTitle}>Synchronisation</div>
-                <div style={styles.pointText}>
-                  Tous les composants affichent toujours la même valeur, en temps réel
-                </div>
-              </div>
-
-              <div style={styles.point}>
-                <div style={styles.pointIcon}>6️⃣</div>
-                <div style={styles.pointTitle}>Une source de vérité</div>
-                <div style={styles.pointText}>
-                  Le Provider est la "single source of truth" pour l'état count
-                </div>
-              </div>
-            </div>
+            <ContentDisplay />
           </div>
         </div>
-      </CounterProvider>
+      </DisplaySettingsProvider>
     </div>
   );
 }
