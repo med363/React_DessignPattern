@@ -12,15 +12,57 @@ import { useCounter } from '../CounterContext';
  * Il se met à jour automatiquement quand count change!
  */
 const CounterStatus = () => {
+  /**
+   * LECTURE DE L'ÉTAT
+   * Ce composant s'abonne au Context en appelant useCounter()
+   */
   const { count } = useCounter();
   
-  // Vérifier si le nombre est pair ou impair
-  const isEven = count % 2 === 0;
-  const isPositive = count > 0;
-  const isZero = count === 0;
-  const isNegative = count < 0;
+  /**
+   * CALCULS DÉRIVÉS (Derived State)
+   * ════════════════════════════════════════════════════════════
+   * 
+   * Ces valeurs sont CALCULÉES à partir de 'count'
+   * Elles ne sont PAS stockées dans le state
+   * 
+   * IMPORTANT: Ces calculs se re-exécutent à CHAQUE render!
+   * 
+   * Quand count change:
+   * 1. Le Provider met à jour count (ex: 0 → 1)
+   * 2. React re-render ce composant
+   * 3. Ces lignes se ré-exécutent avec la nouvelle valeur
+   * 4. isEven passe de true à false (0 est pair, 1 est impair)
+   * 5. isPositive passe de false à true (1 > 0)
+   * 6. L'UI affiche les nouvelles valeurs!
+   * 
+   * C'est automatique, on n'a rien à faire! ✨
+   */
+  const isEven = count % 2 === 0;      // Pair si le reste de la division par 2 = 0
+  const isPositive = count > 0;        // Positif si supérieur à 0
+  const isZero = count === 0;          // Zéro si exactement 0
+  const isNegative = count < 0;        // Négatif si inférieur à 0
   
-  // Observer les re-renders
+  /**
+   * OBSERVER LES RE-RENDERS avec useEffect
+   * ════════════════════════════════════════════════════════════
+   * 
+   * useEffect sans dépendances (pas de []) s'exécute à CHAQUE render
+   * 
+   * Ce log prouve que:
+   * 1. Ce composant se re-render quand count change
+   * 2. Il se re-render même si le changement vient d'un AUTRE composant
+   * 3. Tous les composants qui lisent count se mettent à jour ensemble
+   * 
+   * EXPÉRIENCE:
+   * 1. Ouvrez la console (F12)
+   * 2. Cliquez sur +1 dans CounterControls
+   * 3. Vous verrez:
+   *    - 🔵 increment() appelé (dans CounterContext)
+   *    - 🔄 CounterDisplay re-rendered (ici)
+   *    - 🔄 CounterStatus re-rendered (ici aussi!)
+   * 
+   * Les 3 composants se synchronisent automatiquement! 🎯
+   */
   useEffect(() => {
     console.log('🔄 CounterStatus re-rendered avec count =', count);
   });
@@ -65,6 +107,13 @@ const CounterStatus = () => {
         🔍 Ce composant calcule des valeurs dérivées
         <br />
         🔄 Il se met à jour automatiquement avec l'état partagé
+        <br /><br />
+        <strong>Mécanisme de mise à jour:</strong>
+        <br />1️⃣ count change dans le Provider (ex: clic sur +1)
+        <br />2️⃣ React détecte le changement
+        <br />3️⃣ Ce composant se re-render automatiquement
+        <br />4️⃣ Les calculs (pair/impair, etc.) se ré-exécutent
+        <br />5️⃣ L'UI affiche les nouvelles valeurs!
       </p>
     </div>
   );

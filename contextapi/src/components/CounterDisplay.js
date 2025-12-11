@@ -11,9 +11,37 @@ import { useCounter } from '../CounterContext';
  * quand d'autres composants changent le count!
  */
 const CounterDisplay = () => {
+  /**
+   * LECTURE DE L'ÉTAT depuis le Context
+   * 
+   * useCounter() retourne l'objet 'value' du Provider
+   * On destructure pour extraire seulement 'count'
+   * 
+   * ABONNEMENT AUTOMATIQUE:
+   * En appelant useCounter(), ce composant s'"abonne" au Context
+   * Quand count change dans le Provider, React notifie ce composant
+   * et le re-render automatiquement avec la nouvelle valeur
+   * 
+   * C'est comme un système de notification:
+   * - Provider: "count a changé!"
+   * - CounterDisplay: "OK, je me re-render avec la nouvelle valeur!"
+   */
   const { count } = useCounter();
   
-  // useEffect pour observer les re-renders
+  /**
+   * useEffect SANS dépendances → s'exécute à CHAQUE render
+   * 
+   * POURQUOI CE COMPOSANT SE RE-RENDER?
+   * 1. Le Provider change son état (count)
+   * 2. React détecte que la valeur du Context a changé
+   * 3. React cherche tous les composants qui utilisent useCounter()
+   * 4. React re-render ces composants avec la nouvelle valeur
+   * 5. Ce log s'exécute pour confirmer le re-render
+   * 
+   * IMPORTANT: Ce composant n'a AUCUN bouton!
+   * Il ne fait que LIRE count, mais il se met à jour quand même!
+   * C'est la magie du Context API! ✨
+   */
   useEffect(() => {
     console.log('🔄 CounterDisplay re-rendered avec count =', count);
   });

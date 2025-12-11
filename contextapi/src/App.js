@@ -22,8 +22,25 @@ function App() {
       </header>
       
       {/* 
-        LE PROVIDER ENVELOPPE TOUT
-        Il contient l'état (count) et les fonctions pour le modifier
+        ═══════════════════════════════════════════════════════════
+        LE PROVIDER ENVELOPPE TOUT - C'EST LA CLÉ!
+        ═══════════════════════════════════════════════════════════
+        
+        CounterProvider contient:
+        1. L'ÉTAT (count) → la valeur actuelle stockée en mémoire
+        2. Les FONCTIONS (increment, decrement, etc.) → pour CHANGER l'état
+        
+        FLUX DU CHANGEMENT D'ÉTAT:
+        ┌─────────────────────────────────────────────────────────┐
+        │ 1. État initial: count = 0 dans le Provider             │
+        │ 2. Tous les composants lisent count via useCounter()    │
+        │ 3. User clique sur un bouton                             │
+        │ 4. Une fonction (ex: increment) est appelée             │
+        │ 5. setCount() change count dans le Provider             │
+        │ 6. React détecte le changement                          │
+        │ 7. TOUS les composants qui utilisent count se re-render│
+        │ 8. L'UI affiche la nouvelle valeur partout              │
+        └─────────────────────────────────────────────────────────┘
       */}
       <CounterProvider>
         <div style={styles.container}>
@@ -54,6 +71,14 @@ function App() {
               </ol>
               <div style={styles.note}>
                 💡 <strong>Astuce:</strong> Ouvrez la console (F12) pour voir les logs des changements d'état
+                <br /><br />
+                <strong>Ce que vous verrez dans la console:</strong>
+                <br />🔵 <code>increment() appelé</code> → La fonction est exécutée
+                <br />🔄 <code>CounterDisplay re-rendered</code> → Le composant se met à jour
+                <br />🔄 <code>CounterStatus re-rendered</code> → L'autre composant se met à jour aussi!
+                <br /><br />
+                <strong>Observation importante:</strong> Les composants se re-render AUTOMATIQUEMENT
+                sans qu'on ait besoin de faire quoi que ce soit!
               </div>
             </div>
           )}

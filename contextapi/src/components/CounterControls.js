@@ -13,7 +13,21 @@ import { useCounter } from '../CounterContext';
  *    (CounterDisplay, CounterStatus, etc.)
  */
 const CounterControls = () => {
-  // Récupérer toutes les fonctions de modification
+  /**
+   * RÉCUPÉRATION DES FONCTIONS DE MODIFICATION
+   * 
+   * Ces fonctions viennent du Provider et permettent de CHANGER l'état
+   * 
+   * Chaque fonction:
+   * 1. Est définie dans CounterProvider
+   * 2. Appelle setCount() pour changer l'état
+   * 3. Déclenche un re-render de TOUS les composants abonnés
+   * 
+   * IMPORTANT: On ne récupère PAS 'count' ici car ce composant
+   * n'a pas besoin de LIRE la valeur, juste de la MODIFIER
+   * 
+   * Cela évite un re-render inutile de ce composant!
+   */
   const { increment, decrement, reset, incrementBy, double } = useCounter();
 
   return (
@@ -23,6 +37,21 @@ const CounterControls = () => {
       <div style={styles.section}>
         <h3>Actions basiques</h3>
         <div style={styles.buttonGroup}>
+          {/* 
+            BOUTON INCREMENT
+            ════════════════════════════════════════════════════════
+            onClick={increment} → Appelle la fonction increment()
+            
+            Flux d'exécution quand on clique:
+            1. [Clic] → onClick détecté
+            2. [Function] → increment() est appelée
+            3. [Provider] → setCount(count + 1) s'exécute
+            4. [React] → Détecte que l'état a changé
+            5. [Re-render] → Tous les composants avec useCounter() se mettent à jour
+            6. [UI] → L'affichage change partout automatiquement!
+            
+            Regardez la console pour voir les logs!
+          */}
           <button 
             onClick={increment} 
             style={{...styles.button, backgroundColor: '#4CAF50'}}
@@ -30,6 +59,7 @@ const CounterControls = () => {
             ➕ +1
           </button>
           
+          {/* BOUTON DECREMENT - Même principe mais avec count - 1 */}
           <button 
             onClick={decrement} 
             style={{...styles.button, backgroundColor: '#f44336'}}
@@ -49,6 +79,25 @@ const CounterControls = () => {
       <div style={styles.section}>
         <h3>Actions avancées</h3>
         <div style={styles.buttonGroup}>
+          {/* 
+            FONCTIONS AVEC PARAMÈTRES
+            ════════════════════════════════════════════════════════
+            onClick={() => incrementBy(5)} → Fonction fléchée nécessaire!
+            
+            POURQUOI une arrow function?
+            ❌ onClick={incrementBy(5)} → ERREUR! S'exécute immédiatement
+            ✅ onClick={() => incrementBy(5)} → S'exécute au clic
+            
+            La fonction fléchée () => {...} crée une fonction qui sera
+            appelée SEULEMENT quand on clique, pas au render
+            
+            Flux:
+            1. [Clic] → La fonction fléchée s'exécute
+            2. [Call] → incrementBy(5) est appelée avec 5 en paramètre
+            3. [Provider] → setCount(count + 5) s'exécute
+            4. [Update] → count augmente de 5
+            5. [Re-render] → Tous les composants se mettent à jour
+          */}
           <button 
             onClick={() => incrementBy(5)} 
             style={{...styles.button, backgroundColor: '#FF9800'}}
