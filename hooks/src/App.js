@@ -3,6 +3,8 @@ import './App.css';
 import useFetch from './hooks/useFetch';
 import useLocalStorage from './hooks/useLocalStorage';
 import useCounter from './hooks/useCounter';
+import useForm from './hooks/useForm';
+import useToggle from './hooks/useToggle';
 
 function App() {
   /**
@@ -38,6 +40,50 @@ function App() {
   const { data: user, loading, error } = useFetch(
     `https://jsonplaceholder.typicode.com/users/${userId}`
   );
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * EXEMPLE 4: ENCAPSULATION avec useForm
+   * ═══════════════════════════════════════════════════════════════
+   * 
+   * AVANT (logique NON encapsulée - répétée partout):
+   * ------------------------------------------------
+   * const [email, setEmail] = useState('');
+   * const [message, setMessage] = useState('');
+   * const handleEmailChange = (e) => setEmail(e.target.value);
+   * const handleMessageChange = (e) => setMessage(e.target.value);
+   * 
+   * APRÈS (logique ENCAPSULÉE dans le hook):
+   * ----------------------------------------
+   * const form = useForm({ email: '', message: '' });
+   * // Toute la complexité est cachée! ✨
+   * 
+   * BÉNÉFICE: Moins de code, plus clair, réutilisable
+   */
+  const contactForm = useForm({
+    email: '',
+    message: ''
+  });
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * EXEMPLE 5: ENCAPSULATION simple avec useToggle
+   * ═══════════════════════════════════════════════════════════════
+   * 
+   * Au lieu d'écrire:
+   * -----------------
+   * const [isVisible, setIsVisible] = useState(false);
+   * const show = () => setIsVisible(true);
+   * const hide = () => setIsVisible(false);
+   * const toggle = () => setIsVisible(!isVisible);
+   * 
+   * On ENCAPSULE dans un hook:
+   * -------------------------
+   * const [isVisible, show, hide, toggle] = useToggle(false);
+   * 
+   * RÉSULTAT: Code plus propre, logique réutilisable!
+   */
+  const [showSection, openSection, closeSection, toggleSection] = useToggle(false);
 
   return (
     <div className="App">
@@ -81,7 +127,7 @@ function App() {
         </section>
 
         {/* Fetch Example */}
-        <section style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
           <h2>🌐 Fetch Hook</h2>
           <div>
             <label>User ID: </label>
@@ -106,6 +152,54 @@ function App() {
           )}
           <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
             ✨ Fetch logic is reusable for any API endpoint!
+          </p>
+        </section>
+
+        {/* Form Encapsulation Example */}
+        <section style={{ marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <h2>📝 Form Hook (Encapsulation)</h2>
+          <div style={{ marginBottom: '10px' }}>
+            <input
+              type="email"
+              name="email"
+              value={contactForm.values.email}
+              onChange={contactForm.handleChange}
+              placeholder="Your email"
+              style={{ padding: '8px', fontSize: '16px', width: '200px', display: 'block', marginBottom: '10px' }}
+            />
+            <textarea
+              name="message"
+              value={contactForm.values.message}
+              onChange={contactForm.handleChange}
+              placeholder="Your message"
+              style={{ padding: '8px', fontSize: '16px', width: '200px', height: '80px', display: 'block' }}
+            />
+          </div>
+          <button onClick={contactForm.reset} style={{ marginTop: '10px' }}>Reset Form</button>
+          <div style={{ marginTop: '15px', background: '#f0f8ff', padding: '10px', borderRadius: '5px' }}>
+            <p><strong>Email:</strong> {contactForm.values.email || 'empty'}</p>
+            <p><strong>Message:</strong> {contactForm.values.message || 'empty'}</p>
+          </div>
+          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+            ✨ ENCAPSULATION: Toute la logique du formulaire est dans le hook!
+          </p>
+        </section>
+
+        {/* Toggle Encapsulation Example */}
+        <section style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          <h2>🔄 Toggle Hook (Simple Encapsulation)</h2>
+          <button onClick={toggleSection} style={{ marginRight: '5px' }}>Toggle</button>
+          <button onClick={openSection} style={{ marginRight: '5px' }}>Show</button>
+          <button onClick={closeSection}>Hide</button>
+          
+          {showSection && (
+            <div style={{ marginTop: '15px', background: '#e8f5e9', padding: '15px', borderRadius: '5px' }}>
+              <p>🎉 Cette section est visible!</p>
+              <p>La logique show/hide/toggle est ENCAPSULÉE dans useToggle</p>
+            </div>
+          )}
+          <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+            ✨ ENCAPSULATION: 4 lignes de logique réutilisable au lieu de les répéter!
           </p>
         </section>
       </header>
