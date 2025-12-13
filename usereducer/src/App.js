@@ -1,103 +1,112 @@
-import { useState, useReducer } from 'react';
+import { useReducer } from 'react';
 import './App.css';
 
-// Problem with useState: Stale state in async operations
-function CounterWithStateAnomaly() {
-  const [count, setCount] = useState(0);
-
-  // This demonstrates the stale closure problem
-  const incrementAsync = () => {
-    setTimeout(() => {
-      // This captures the current value of 'count' when the function is called
-      // If you click multiple times quickly, all timeouts use the same old value
-      setCount(count + 1); // ANOMALY: Uses stale state!
-    }, 1000);
-  };
-
-  return (
-    <div style={{ padding: '20px', border: '2px solid #ff6b6b', margin: '20px' }}>
-      <h2>useState - Stale State Anomaly ❌</h2>
-      <p>Count: {count}</p>
-      <button onClick={incrementAsync}>Increment After 1s</button>
-      <p style={{ fontSize: '12px', color: '#666' }}>
-        Try clicking multiple times quickly - only one increment happens!
-      </p>
-    </div>
-  );
-}
-
-// Solution with useReducer: Always uses current state
-function reducer(state, action) {
+// Reducer handles multiple action types
+function formReducer(state, action) {
   switch (action.type) {
-    case 'increment':
-      return { count: state.count + 1 };
+    case 'SET_NAME':
+      return { ...state, name: action.payload };
+    case 'SET_EMAIL':
+      return { ...state, email: action.payload };
+    case 'SET_AGE':
+      return { ...state, age: action.payload };
+    case 'TOGGLE_SUBSCRIBE':
+      return { ...state, subscribe: !state.subscribe };
+    case 'RESET':
+      return { name: '', email: '', age: '', subscribe: false };
+    case 'SUBMIT':
+      return { ...state, submitted: true };
     default:
       return state;
   }
 }
 
-function CounterWithReducer() {
-  const [state, dispatch] = useReducer(reducer, { count: 0 });
-
-  const incrementAsync = () => {
-    setTimeout(() => {
-      // dispatch always works with the current state
-      // Multiple clicks will all work correctly
-      dispatch({ type: 'increment' }); // ✅ Uses current state!
-    }, 1000);
-  };
-
-  return (
-    <div style={{ padding: '20px', border: '2px solid #51cf66', margin: '20px' }}>
-      <h2>useReducer - No Anomaly ✅</h2>
-      <p>Count: {state.count}</p>
-      <button onClick={incrementAsync}>Increment After 1s</button>
-      <p style={{ fontSize: '12px', color: '#666' }}>
-        Try clicking multiple times quickly - all increments work!
-      </p>
-    </div>
-  );
-}
-
-// Alternative fix with useState using functional update
-function CounterWithStateFix() {
-  const [count, setCount] = useState(0);
-
-  const incrementAsync = () => {
-    setTimeout(() => {
-      // Using functional update - receives current state as parameter
-      setCount(prevCount => prevCount + 1); // ✅ Also works!
-    }, 1000);
-  };
-
-  return (
-    <div style={{ padding: '20px', border: '2px solid #4dabf7', margin: '20px' }}>
-      <h2>useState with Functional Update ✅</h2>
-      <p>Count: {count}</p>
-      <button onClick={incrementAsync}>Increment After 1s</button>
-      <p style={{ fontSize: '12px', color: '#666' }}>
-        Using prevCount =&gt; prevCount + 1 also works!
-      </p>
-    </div>
-  );
-}
-
 function App() {
+  const [state, dispatch] = useReducer(formReducer, {
+    name: '',
+    email: '',
+    age: '',
+    subscribe: false,
+    submitted: false
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch({ type: 'SUBMIT' });
+  };
+
   return (
-    <div className="App" style={{ padding: '20px' }}>
-      <h1>useReducer: Understanding the Stale State Anomaly</h1>
-      <p>
-        <strong>The Problem:</strong> When using useState with async operations or callbacks,
-        the state value can become "stale" (outdated) because closures capture the value at the time they're created.
-      </p>
-      <p>
-        <strong>The Solution:</strong> useReducer always works with the current state, 
-        or you can use functional updates with useState.
-      </p>
+    <div className="App" style={{ padding: '40px', maxWidth: '500px', margin: '0 auto' }}>
+      <h1>useReducer - Multiple Actions Example</h1>
       
-      <CounterWithStateAnomaly />
-      <CounterWithReducer />
-      <CounterWithStateFix />
+      <form onSubmit={handleSubmit} style={{ border: '2px solid #61dafb', padding: '20px', borderRadius: '8px' }}>
+        <div style={{ marginBottom: '15px' }}>
+          <label>Name:</label><br />
+          <input 
+            type="text"
+            value={state.name}
+            onChange={(e) => dispatch({ type: 'SET_NAME', payload: e.target.value })}
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label>Email:</label><br />
+          <input 
+            type="email"
+            value={state.email}
+            onChange={(e) => dispatch({ type: 'SET_EMAIL', payload: e.target.value })}
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label>Age:</label><br />
+          <input 
+            type="number"
+            value={state.age}
+            onChange={(e) => dispatch({ type: 'SET_AGE', payload: e.target.value })}
+            style={{ width: '100%', padding: '8px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label>
+            <input 
+              type="checkbox"
+              checked={state.subscribe}
+              onChange={() => dispatch({ type: 'TOGGLE_SUBSCRIBE' })}
+            />
+            {' '}Subscribe to newsletter
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button type="submit" style={{ padding: '10px 20px' }}>Submit</button>
+          <button 
+            type="button" 
+            onClick={() => dispatch({ type: 'RESET' })}
+            style={{ padding: '10px 20px' }}
+          >
+            Reset
+          </button>
+        </div>
+      </form>
+
+      {state.submitted && (
+        <div style={{ marginTop: '20px', padding: '20px', background: '#d4edda', borderRadius: '8px' }}>
+          <h3>Form Submitted! ✅</h3>
+          <p><strong>Name:</strong> {state.name}</p>
+          <p><strong>Email:</strong> {state.email}</p>
+          <p><strong>Age:</strong> {state.age}</p>
+          <p><strong>Newsletter:</strong> {state.subscribe ? 'Yes' : 'No'}</p>
+        </div>
+      )}
+
+      <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+        <h4>Current State:</h4>
+        <pre style={{ fontSize: '12px' }}>{JSON.stringify(state, null, 2)}</pre>
+      </div>
     </div>
   );
 }
