@@ -1,111 +1,161 @@
 import { useReducer } from 'react';
 import './App.css';
 
-// Reducer handles multiple action types
-function formReducer(state, action) {
+// Reducer to manage complex nested state
+function cartReducer(state, action) {
   switch (action.type) {
-    case 'SET_NAME':
-      return { ...state, name: action.payload };
-    case 'SET_EMAIL':
-      return { ...state, email: action.payload };
-    case 'SET_AGE':
-      return { ...state, age: action.payload };
-    case 'TOGGLE_SUBSCRIBE':
-      return { ...state, subscribe: !state.subscribe };
-    case 'RESET':
-      return { name: '', email: '', age: '', subscribe: false };
-    case 'SUBMIT':
-      return { ...state, submitted: true };
+    case 'ADD_ITEM':
+      const existingItem = state.items.find(item => item.id === action.payload.id);
+      if (existingItem) {
+        return {
+          ...state,
+          items: state.items.map(item =>
+            item.id === action.payload.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        };
+      }
+      return {
+        ...state,
+        items: [...state.items, { ...action.payload, quantity: 1 }]
+      };
+
+    case 'REMOVE_ITEM':
+      return {
+        ...state,
+        items: state.items.filter(item => item.id !== action.payload)
+      };
+
+    case 'UPDATE_QUANTITY':
+      return {
+        ...state,
+        items: state.items.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: action.payload.quantity }
+            : item
+        )
+      };
+
+    case 'APPLY_DISCOUNT':
+      return {
+        ...state,
+        discount: action.payload
+      };
+
+    case 'CLEAR_CART':
+      return {
+        items: [],
+        discount: 0
+      };
+
     default:
       return state;
   }
 }
 
 function App() {
-  const [state, dispatch] = useReducer(formReducer, {
-    name: '',
-    email: '',
-    age: '',
-    subscribe: false,
-    submitted: false
+  const [cart, dispatch] = useReducer(cartReducer, {
+    items: [],
+    discount: 0
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch({ type: 'SUBMIT' });
-  };
+  // Available products
+  const products = [
+    { id: 1, name: 'Laptop', price: 999 },
+    { id: 2, name: 'Mouse', price: 25 },
+    { id: 3, name: 'Keyboard', price: 75 }
+  ];
+
+  // Calculate totals
+  const subtotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const discountAmount = (subtotal * cart.discount) / 100;
+  const total = subtotal - discountAmount;
 
   return (
-    <div className="App" style={{ padding: '40px', maxWidth: '500px', margin: '0 auto' }}>
-      <h1>useReducer - Multiple Actions Example</h1>
-      
-      <form onSubmit={handleSubmit} style={{ border: '2px solid #61dafb', padding: '20px', borderRadius: '8px' }}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Name:</label><br />
-          <input 
-            type="text"
-            value={state.name}
-            onChange={(e) => dispatch({ type: 'SET_NAME', payload: e.target.value })}
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div className="App" style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>useReducer - Complex State Management</h1>
+      <p>Shopping cart with nested state: items array + discount</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Products */}
+        <div style={{ border: '2px solid #61dafb', padding: '20px', borderRadius: '8px' }}>
+          <h2>Products</h2>
+          {products.map(product => (
+            <div key={product.id} style={{ marginBottom: '10px', padding: '10px', background: '#f8f9fa' }}>
+              <strong>{product.name}</strong> - ${product.price}
+              <button 
+                onClick={() => dispatch({ type: 'ADD_ITEM', payload: product })}
+                style={{ marginLeft: '10px', padding: '5px 10px' }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          ))}
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email:</label><br />
-          <input 
-            type="email"
-            value={state.email}
-            onChange={(e) => dispatch({ type: 'SET_EMAIL', payload: e.target.value })}
-            style={{ width: '100%', padding: '8px' }}
-          />
+        {/* Cart */}
+        <div style={{ border: '2px solid #51cf66', padding: '20px', borderRadius: '8px' }}>
+          <h2>Shopping Cart</h2>
+          {cart.items.length === 0 ? (
+            <p>Cart is empty</p>
+          ) : (
+            <>
+              {cart.items.map(item => (
+                <div key={item.id} style={{ marginBottom: '10px', padding: '10px', background: '#f8f9fa' }}>
+                  <strong>{item.name}</strong> - ${item.price}
+                  <br />
+                  Quantity: 
+                  <input 
+                    type="number" 
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) => dispatch({ 
+                      type: 'UPDATE_QUANTITY', 
+                      payload: { id: item.id, quantity: parseInt(e.target.value) || 1 }
+                    })}
+                    style={{ width: '50px', margin: '0 10px' }}
+                  />
+                  <button 
+                    onClick={() => dispatch({ type: 'REMOVE_ITEM', payload: item.id })}
+                    style={{ padding: '3px 8px', background: '#ff6b6b', color: 'white' }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              
+              <div style={{ marginTop: '20px', borderTop: '2px solid #ddd', paddingTop: '10px' }}>
+                <div>
+                  <label>Discount (%): </label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="100"
+                    value={cart.discount}
+                    onChange={(e) => dispatch({ type: 'APPLY_DISCOUNT', payload: parseInt(e.target.value) || 0 })}
+                    style={{ width: '60px', marginLeft: '10px' }}
+                  />
+                </div>
+                <p>Subtotal: ${subtotal.toFixed(2)}</p>
+                {cart.discount > 0 && <p>Discount ({cart.discount}%): -${discountAmount.toFixed(2)}</p>}
+                <p><strong>Total: ${total.toFixed(2)}</strong></p>
+                <button 
+                  onClick={() => dispatch({ type: 'CLEAR_CART' })}
+                  style={{ padding: '8px 16px', background: '#ff6b6b', color: 'white' }}
+                >
+                  Clear Cart
+                </button>
+              </div>
+            </>
+          )}
         </div>
+      </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Age:</label><br />
-          <input 
-            type="number"
-            value={state.age}
-            onChange={(e) => dispatch({ type: 'SET_AGE', payload: e.target.value })}
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label>
-            <input 
-              type="checkbox"
-              checked={state.subscribe}
-              onChange={() => dispatch({ type: 'TOGGLE_SUBSCRIBE' })}
-            />
-            {' '}Subscribe to newsletter
-          </label>
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="submit" style={{ padding: '10px 20px' }}>Submit</button>
-          <button 
-            type="button" 
-            onClick={() => dispatch({ type: 'RESET' })}
-            style={{ padding: '10px 20px' }}
-          >
-            Reset
-          </button>
-        </div>
-      </form>
-
-      {state.submitted && (
-        <div style={{ marginTop: '20px', padding: '20px', background: '#d4edda', borderRadius: '8px' }}>
-          <h3>Form Submitted! ✅</h3>
-          <p><strong>Name:</strong> {state.name}</p>
-          <p><strong>Email:</strong> {state.email}</p>
-          <p><strong>Age:</strong> {state.age}</p>
-          <p><strong>Newsletter:</strong> {state.subscribe ? 'Yes' : 'No'}</p>
-        </div>
-      )}
-
+      {/* State Display */}
       <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
-        <h4>Current State:</h4>
-        <pre style={{ fontSize: '12px' }}>{JSON.stringify(state, null, 2)}</pre>
+        <h4>Current Complex State:</h4>
+        <pre style={{ fontSize: '12px', overflow: 'auto' }}>{JSON.stringify(cart, null, 2)}</pre>
       </div>
     </div>
   );
