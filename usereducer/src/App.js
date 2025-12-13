@@ -1,187 +1,109 @@
-import { useReducer, useContext, createContext } from 'react';
+import { useReducer } from 'react';
 import './App.css';
 
-// Single source of truth: Context for global state
-const AppContext = createContext();
-
-// Reducer manages all state in one place
-function appReducer(state, action) {
+// Reducer: Single source of truth for state logic
+function counterReducer(state, action) {
   switch (action.type) {
-    case 'SET_USER':
-      return { ...state, user: action.payload };
-    case 'LOGOUT':
-      return { ...state, user: null };
-    case 'SET_THEME':
-      return { ...state, theme: action.payload };
-    case 'ADD_NOTIFICATION':
-      return { 
-        ...state, 
-        notifications: [...state.notifications, action.payload] 
-      };
-    case 'CLEAR_NOTIFICATIONS':
-      return { ...state, notifications: [] };
+    case 'increment':
+      return { count: state.count + 1 };
+    case 'decrement':
+      return { count: state.count - 1 };
+    case 'reset':
+      return { count: 0 };
     default:
       return state;
   }
 }
 
-// Provider component wraps the app
-function AppProvider({ children }) {
-  const [state, dispatch] = useReducer(appReducer, {
-    user: null,
-    theme: 'light',
-    notifications: []
-  });
-
+// Component 1: Displays count
+function CountDisplay({ count }) {
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
-      {children}
-    </AppContext.Provider>
-  );
-}
-
-// Custom hook to use the context
-function useApp() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
-}
-
-// Header component - accesses global state
-function Header() {
-  const { state, dispatch } = useApp();
-
-  return (
-    <div style={{ 
-      padding: '20px', 
-      background: state.theme === 'light' ? '#61dafb' : '#282c34',
-      color: state.theme === 'light' ? '#000' : '#fff'
-    }}>
-      <h2>Header</h2>
-      {state.user ? (
-        <div>
-          <span>Welcome, {state.user}! </span>
-          <button onClick={() => dispatch({ type: 'LOGOUT' })}>Logout</button>
-        </div>
-      ) : (
-        <p>Not logged in</p>
-      )}
+    <div style={{ padding: '20px', border: '2px solid #61dafb', margin: '10px' }}>
+      <h3>Count Display</h3>
+      <p style={{ fontSize: '48px', margin: '10px 0' }}>{count}</p>
     </div>
   );
 }
 
-// Sidebar component - accesses global state
-function Sidebar() {
-  const { state, dispatch } = useApp();
-
+// Component 2: Controls increment/decrement
+function CountControls({ dispatch }) {
   return (
-    <div style={{ 
-      padding: '20px', 
-      background: state.theme === 'light' ? '#f0f0f0' : '#1a1a1a',
-      color: state.theme === 'light' ? '#000' : '#fff',
-      minHeight: '200px'
-    }}>
-      <h3>Sidebar</h3>
-      <p>Theme: {state.theme}</p>
-      <button onClick={() => dispatch({ 
-        type: 'SET_THEME', 
-        payload: state.theme === 'light' ? 'dark' : 'light' 
-      })}>
-        Toggle Theme
+    <div style={{ padding: '20px', border: '2px solid #51cf66', margin: '10px' }}>
+      <h3>Count Controls</h3>
+      <button onClick={() => dispatch({ type: 'increment' })} style={{ margin: '5px', padding: '10px 20px' }}>
+        +1
+      </button>
+      <button onClick={() => dispatch({ type: 'decrement' })} style={{ margin: '5px', padding: '10px 20px' }}>
+        -1
       </button>
     </div>
   );
 }
 
-// Login component - updates global state
-function LoginForm() {
-  const { dispatch } = useApp();
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const username = e.target.username.value;
-    dispatch({ type: 'SET_USER', payload: username });
-    dispatch({ 
-      type: 'ADD_NOTIFICATION', 
-      payload: `${username} logged in successfully!` 
-    });
-  };
+// Component 3: Shows count status
+function CountStatus({ count }) {
+  const status = count === 0 ? 'Zero' : count > 0 ? 'Positive' : 'Negative';
+  const color = count === 0 ? '#gray' : count > 0 ? '#51cf66' : '#ff6b6b';
 
   return (
-    <div style={{ padding: '20px', border: '2px solid #61dafb', margin: '20px' }}>
-      <h3>Login</h3>
-      <form onSubmit={handleLogin}>
-        <input 
-          name="username"
-          placeholder="Enter username"
-          style={{ padding: '8px', marginRight: '10px' }}
-        />
-        <button type="submit" style={{ padding: '8px 16px' }}>Login</button>
-      </form>
+    <div style={{ padding: '20px', border: `2px solid ${color}`, margin: '10px' }}>
+      <h3>Count Status</h3>
+      <p>Current Status: <strong style={{ color }}>{status}</strong></p>
+      <p>Value: {count}</p>
     </div>
   );
 }
 
-// Notifications component - accesses global state
-function Notifications() {
-  const { state, dispatch } = useApp();
-
+// Component 4: Reset button
+function ResetButton({ dispatch, count }) {
   return (
-    <div style={{ padding: '20px', border: '2px solid #51cf66', margin: '20px' }}>
-      <h3>Notifications ({state.notifications.length})</h3>
-      {state.notifications.length === 0 ? (
-        <p>No notifications</p>
-      ) : (
-        <>
-          {state.notifications.map((notif, index) => (
-            <div key={index} style={{ padding: '8px', background: '#d4edda', margin: '5px 0' }}>
-              {notif}
-            </div>
-          ))}
-          <button 
-            onClick={() => dispatch({ type: 'CLEAR_NOTIFICATIONS' })}
-            style={{ marginTop: '10px', padding: '5px 10px' }}
-          >
-            Clear All
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Main content
-function MainContent() {
-  const { state } = useApp();
-
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>Single Source of Truth</h1>
-      <p>useReducer + useContext = Global State Management</p>
-      
-      {!state.user && <LoginForm />}
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-        <Sidebar />
-        <Notifications />
-      </div>
-
-      <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
-        <h4>Global State (Single Source of Truth):</h4>
-        <pre style={{ fontSize: '12px' }}>{JSON.stringify(state, null, 2)}</pre>
-      </div>
+    <div style={{ padding: '20px', border: '2px solid #ffd43b', margin: '10px' }}>
+      <h3>Reset Control</h3>
+      <button 
+        onClick={() => dispatch({ type: 'reset' })}
+        disabled={count === 0}
+        style={{ padding: '10px 20px', background: count === 0 ? '#ccc' : '#ffd43b' }}
+      >
+        Reset to Zero
+      </button>
     </div>
   );
 }
 
 function App() {
+  // Single source of truth: state and dispatch
+  const [state, dispatch] = useReducer(counterReducer, { count: 0 });
+
   return (
-    <AppProvider>
-      <Header />
-      <MainContent />
-    </AppProvider>
+    <div className="App" style={{ padding: '40px', maxWidth: '600px', margin: '0 auto' }}>
+      <h1>Single Source of Truth with useReducer</h1>
+      <p>
+        All components share the same state from one useReducer.
+        <br />
+        State is passed down as props - components stay in sync.
+      </p>
+
+      <CountDisplay count={state.count} />
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <CountControls dispatch={dispatch} />
+        <CountStatus count={state.count} />
+      </div>
+
+      <ResetButton dispatch={dispatch} count={state.count} />
+
+      <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+        <h4>Single Source of Truth:</h4>
+        <pre style={{ fontSize: '12px' }}>{JSON.stringify(state, null, 2)}</pre>
+        <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+          ✓ All 4 components share this one state
+          <br />
+          ✓ Updates through dispatch keep everyone in sync
+          <br />
+          ✓ No duplicate state or prop drilling complexity
+        </p>
+      </div>
+    </div>
   );
 }
 
