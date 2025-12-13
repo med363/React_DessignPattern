@@ -1,106 +1,201 @@
 import { useReducer } from 'react';
 import './App.css';
 
-// Reducer: Single source of truth for state logic
-function counterReducer(state, action) {
+// Reducer function
+function todoReducer(state, action) {
   switch (action.type) {
-    case 'increment':
-      return { count: state.count + 1 };
-    case 'decrement':
-      return { count: state.count - 1 };
-    case 'reset':
-      return { count: 0 };
+    case 'add':
+      return [...state, { id: Date.now(), text: action.payload, completed: false }];
+    case 'toggle':
+      return state.map(todo =>
+        todo.id === action.payload ? { ...todo, completed: !todo.completed } : todo
+      );
+    case 'remove':
+      return state.filter(todo => todo.id !== action.payload);
+    case 'clear':
+      return [];
     default:
       return state;
   }
 }
 
-// Component 1: Displays count
-function CountDisplay({ count }) {
+// Custom hook: Single source of truth with reusable logic
+function useTodos() {
+  const [todos, dispatch] = useReducer(todoReducer, []);
+
+  // Helper functions - encapsulate logic
+  const addTodo = (text) => {
+    if (text.trim()) {
+      dispatch({ type: 'add', payload: text });
+    }
+  };
+
+  const toggleTodo = (id) => {
+    dispatch({ type: 'toggle', payload: id });
+  };
+
+  const removeTodo = (id) => {
+    dispatch({ type: 'remove', payload: id });
+  };
+
+  const clearTodos = () => {
+    dispatch({ type: 'clear' });
+  };
+
+  // Computed values
+  const totalCount = todos.length;
+  const completedCount = todos.filter(t => t.completed).length;
+  const pendingCount = totalCount - completedCount;
+
+  return {
+    todos,
+    addTodo,
+    toggleTodo,
+    removeTodo,
+    clearTodos,
+    totalCount,
+    completedCount,
+    pendingCount
+  };
+}
+
+// Component 1: Add todo form
+function TodoInput({ onAdd }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAdd(e.target.todo.value);
+    e.target.reset();
+  };
+
   return (
     <div style={{ padding: '20px', border: '2px solid #61dafb', margin: '10px' }}>
-      <h3>Count Display</h3>
-      <p style={{ fontSize: '48px', margin: '10px 0' }}>{count}</p>
+      <h3>Add Todo</h3>
+      <form onSubmit={handleSubmit}>
+        <input 
+          name="todo"
+          placeholder="Enter todo..."
+          style={{ padding: '8px', width: '200px', marginRight: '10px' }}
+        />
+        <button type="submit" style={{ padding: '8px 16px' }}>Add</button>
+      </form>
     </div>
   );
 }
 
-// Component 2: Controls increment/decrement
-function CountControls({ dispatch }) {
+// Component 2: Todo list
+function TodoList({ todos, onToggle, onRemove }) {
   return (
     <div style={{ padding: '20px', border: '2px solid #51cf66', margin: '10px' }}>
-      <h3>Count Controls</h3>
-      <button onClick={() => dispatch({ type: 'increment' })} style={{ margin: '5px', padding: '10px 20px' }}>
-        +1
-      </button>
-      <button onClick={() => dispatch({ type: 'decrement' })} style={{ margin: '5px', padding: '10px 20px' }}>
-        -1
-      </button>
+      <h3>Todo List</h3>
+      {todos.length === 0 ? (
+        <p>No todos yet</p>
+      ) : (
+        todos.map(todo => (
+          <div key={todo.id} style={{ padding: '8px', margin: '5px 0', background: '#f8f9fa' }}>
+            <input 
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => onToggle(todo.id)}
+            />
+            <span style={{ 
+              marginLeft: '10px',
+              textDecoration: todo.completed ? 'line-through' : 'none',
+              color: todo.completed ? '#999' : '#000'
+            }}>
+              {todo.text}
+            </span>
+            <button 
+              onClick={() => onRemove(todo.id)}
+              style={{ float: 'right', padding: '3px 8px', background: '#ff6b6b', color: 'white' }}
+            >
+              Delete
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
-// Component 3: Shows count status
-function CountStatus({ count }) {
-  const status = count === 0 ? 'Zero' : count > 0 ? 'Positive' : 'Negative';
-  const color = count === 0 ? '#gray' : count > 0 ? '#51cf66' : '#ff6b6b';
-
-  return (
-    <div style={{ padding: '20px', border: `2px solid ${color}`, margin: '10px' }}>
-      <h3>Count Status</h3>
-      <p>Current Status: <strong style={{ color }}>{status}</strong></p>
-      <p>Value: {count}</p>
-    </div>
-  );
-}
-
-// Component 4: Reset button
-function ResetButton({ dispatch, count }) {
+// Component 3: Statistics
+function TodoStats({ totalCount, completedCount, pendingCount }) {
   return (
     <div style={{ padding: '20px', border: '2px solid #ffd43b', margin: '10px' }}>
-      <h3>Reset Control</h3>
+      <h3>Statistics</h3>
+      <p>Total: <strong>{totalCount}</strong></p>
+      <p>Completed: <strong style={{ color: '#51cf66' }}>{completedCount}</strong></p>
+      <p>Pending: <strong style={{ color: '#ff6b6b' }}>{pendingCount}</strong></p>
+    </div>
+  );
+}
+
+// Component 4: Actions
+function TodoActions({ onClear, hasItems }) {
+  return (
+    <div style={{ padding: '20px', border: '2px solid #a78bfa', margin: '10px' }}>
+      <h3>Actions</h3>
       <button 
-        onClick={() => dispatch({ type: 'reset' })}
-        disabled={count === 0}
-        style={{ padding: '10px 20px', background: count === 0 ? '#ccc' : '#ffd43b' }}
+        onClick={onClear}
+        disabled={!hasItems}
+        style={{ 
+          padding: '10px 20px',
+          background: hasItems ? '#ff6b6b' : '#ccc',
+          color: 'white'
+        }}
       >
-        Reset to Zero
+        Clear All Todos
       </button>
     </div>
   );
 }
 
 function App() {
-  // Single source of truth: state and dispatch
-  const [state, dispatch] = useReducer(counterReducer, { count: 0 });
+  // Custom hook provides single source of truth
+  const { 
+    todos, 
+    addTodo, 
+    toggleTodo, 
+    removeTodo, 
+    clearTodos,
+    totalCount,
+    completedCount,
+    pendingCount
+  } = useTodos();
 
   return (
-    <div className="App" style={{ padding: '40px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Single Source of Truth with useReducer</h1>
+    <div className="App" style={{ padding: '40px', maxWidth: '700px', margin: '0 auto' }}>
+      <h1>Single Source of Truth with Custom Hook</h1>
       <p>
-        All components share the same state from one useReducer.
+        All state and logic is encapsulated in <code>useTodos()</code> hook.
         <br />
-        State is passed down as props - components stay in sync.
+        Components receive only what they need - clean separation!
       </p>
 
-      <CountDisplay count={state.count} />
-      
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        <CountControls dispatch={dispatch} />
-        <CountStatus count={state.count} />
+      <TodoInput onAdd={addTodo} />
+
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+        <TodoList todos={todos} onToggle={toggleTodo} onRemove={removeTodo} />
+        <div>
+          <TodoStats 
+            totalCount={totalCount} 
+            completedCount={completedCount} 
+            pendingCount={pendingCount}
+          />
+          <TodoActions onClear={clearTodos} hasItems={totalCount > 0} />
+        </div>
       </div>
 
-      <ResetButton dispatch={dispatch} count={state.count} />
-
       <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
-        <h4>Single Source of Truth:</h4>
-        <pre style={{ fontSize: '12px' }}>{JSON.stringify(state, null, 2)}</pre>
+        <h4>Single Source of Truth (from useTodos hook):</h4>
+        <pre style={{ fontSize: '12px' }}>{JSON.stringify(todos, null, 2)}</pre>
         <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
-          ✓ All 4 components share this one state
+          ✓ All state managed by useReducer inside custom hook
           <br />
-          ✓ Updates through dispatch keep everyone in sync
+          ✓ Business logic encapsulated in hook
           <br />
-          ✓ No duplicate state or prop drilling complexity
+          ✓ Components stay clean and focused
+          <br />
+          ✓ Hook can be reused across app
         </p>
       </div>
     </div>
