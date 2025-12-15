@@ -8,7 +8,7 @@ function BuggyComponent() {
     setCounter(counter + 1);
   };
 
-  // This will throw an error when counter reaches 3
+  /* This will throw an error when counter reaches 3 */
   if (counter === 3) {
     throw new Error('I crashed! Counter reached 3');
   }

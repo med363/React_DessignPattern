@@ -13,6 +13,7 @@ function App() {
         This demonstrates how Error Boundaries catch and display errors gracefully
       </p>
 
+
       {/* Component wrapped with Error Boundary */}
       <ErrorBoundary>
         <BuggyComponent />
