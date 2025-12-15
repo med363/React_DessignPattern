@@ -1,44 +1,27 @@
 import React, { useState } from 'react';
 
-// This component will throw an error when the button is clicked
 function BuggyComponent() {
-  const [counter, setCounter] = useState(0);
+  const [count, setCount] = useState(0);
 
-  const handleClick = () => {
-    setCounter(counter + 1);
-  };
-
-  /* This will throw an error when counter reaches 3 */
-  if (counter === 3) {
-    throw new Error('I crashed! Counter reached 3');
+  if (count === 5) {
+    throw new Error('Crash at count 5!');
   }
 
   return (
-    <div style={{
-      padding: '20px',
-      margin: '20px',
-      border: '2px solid #4dabf7',
-      borderRadius: '8px',
-      backgroundColor: '#e7f5ff'
-    }}>
-      <h2 style={{ color: '#1864ab' }}>Buggy Counter Component</h2>
-      <p>Click the button. When counter reaches 3, it will crash!</p>
-      <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1971c2' }}>
-        Counter: {counter}
-      </p>
-      <button
-        onClick={handleClick}
+    <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+      <h3>Counter: {count}</h3>
+      <button 
+        onClick={() => setCount(count + 1)}
         style={{
           padding: '10px 20px',
-          backgroundColor: '#4dabf7',
+          backgroundColor: '#28a745',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '16px'
+          cursor: 'pointer'
         }}
       >
-        Increment Counter
+        Click Me (crashes at 5)
       </button>
     </div>
   );
